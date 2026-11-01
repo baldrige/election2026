@@ -1,0 +1,13 @@
+{
+  "name": "election-night-desk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Election day/night dashboard: AP vote tallies, prediction markets, news headlines.",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.js",
+    "demo": "DEMO=1 node server.js",
+    "test": "node tools/selftest.js",
+    "find-markets": "node tools/find-markets.js"
+  }
+}

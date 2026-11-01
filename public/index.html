@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Election Night Desk</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <h1>Election Night Desk</h1>
+    <span id="demoBadge" class="demo" hidden>DEMO DATA — NOT REAL RESULTS</span>
+  </div>
+  <div class="meta">
+    <span id="clock" class="clock"></span>
+    <span id="nextClose" class="next"></span>
+    <span id="status" class="status"></span>
+  </div>
+</header>
+
+<main>
+  <section class="bop" id="bop" aria-label="Balance of power"></section>
+
+  <section class="panel races">
+    <div class="panel-head">
+      <h2>Races</h2>
+      <div class="filters">
+        <div class="seg" role="tablist" id="officeTabs">
+          <button data-office="S" class="on">Senate</button>
+          <button data-office="G">Governor</button>
+          <button data-office="H">House</button>
+        </div>
+        <select id="viewSel" aria-label="Which races">
+          <option value="watch">Watch list</option>
+          <option value="close">Closest uncalled</option>
+          <option value="all">All</option>
+        </select>
+        <input id="search" type="search" placeholder="State or district…" aria-label="Filter races">
+      </div>
+    </div>
+    <div id="raceErr" class="err" hidden></div>
+    <div id="raceList" class="race-list"></div>
+  </section>
+
+  <section class="panel markets">
+    <div class="panel-head"><h2>Prediction markets</h2><span class="sub">Implied probability · line = since dashboard start</span></div>
+    <div id="mktErr" class="err" hidden></div>
+    <div id="mktList" class="mkt-list"></div>
+    <p class="fine">Market prices reflect traders' bets, not forecasts or results.</p>
+  </section>
+
+  <section class="panel calls">
+    <div class="panel-head"><h2>Race calls</h2><span class="sub">As reported by the results provider</span></div>
+    <ol id="callList" class="call-list"></ol>
+  </section>
+
+  <section class="panel news">
+    <div class="panel-head"><h2>Latest news</h2><span id="newsSub" class="sub"></span></div>
+    <div id="newsErr" class="err" hidden></div>
+    <ol id="newsList" class="news-list"></ol>
+  </section>
+
+  <section class="panel polls">
+    <div class="panel-head"><h2>Poll closings</h2><span class="sub">Eastern time · last polls in each state</span></div>
+    <ol id="pollList" class="poll-list"></ol>
+    <p class="fine">Typical closing times; some states close in stages across time zones. Confirm with state election offices.</p>
+  </section>
+</main>
+
+<footer>
+  <span id="credit"></span>
+</footer>
+<script src="polls.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

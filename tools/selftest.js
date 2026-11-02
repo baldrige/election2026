@@ -95,5 +95,20 @@ global.fetch = async (url) => {
   assert.strictEqual(senate.rows.length, 1);
   assert.deepStrictEqual(grouped.others.map((m) => m.key).sort(), ['bop', 'ga'], 'state races and combos stay separate');
 
+  // --- saved state: round trip, and the cases where it must be ignored ---
+  const persist = require('../lib/persist');
+  const os = require('os'), fsx = require('fs'), px = require('path');
+  const file = px.join(fsx.mkdtempSync(px.join(os.tmpdir(), 'persist-')), 'sub', 'state.json');
+  const hist = { 'group:house:2026': Object.assign([[1, 0.5], [2, 0.52]], { label: 'Dem' }) };
+  persist.save(file, { electionDate: '2026-11-03', calls: [{ id: 'x', party: 'Dem' }], calledSeen: new Map([['x', 'Dem']]), history: hist });
+  const restoredSnap = persist.load(file, { electionDate: '2026-11-03' });
+  assert.deepStrictEqual(restoredSnap.calls, [{ id: 'x', party: 'Dem' }]); assert.strictEqual(restoredSnap.calledSeen.get('x'), 'Dem');
+  assert.deepStrictEqual([...restoredSnap.history['group:house:2026']], [[1, 0.5], [2, 0.52]]);
+  assert.strictEqual(restoredSnap.history['group:house:2026'].label, 'Dem', 'trend-line label survives the round trip');
+  assert.match(persist.load(file, { electionDate: '2028-11-07' }).skipped, /for 2026-11-03/);
+  fsx.writeFileSync(file, '{"v":1,"electionDate":"2026-11-03","calls":[');
+  assert.match(persist.load(file, { electionDate: '2026-11-03' }).skipped, /unreadable/);
+  assert.match(persist.load(file + '.missing', { electionDate: '2026-11-03' }).skipped, /no saved state/);
+
   console.log('selftest: all checks passed');
 })().catch((e) => { console.error('selftest FAILED:', e.message); process.exit(1); });

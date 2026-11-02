@@ -16,7 +16,7 @@ A single-screen dashboard for U.S. election night (Nov 3, 2026): Senate, House a
 
 Everything is free; no API keys. Zero dependencies; you only need **Node 18 or newer**.
 
-**About civicAPI.** It's a small independent project, not a news organization or election office. Its numbers and calls are labelled on every card, and official state counts take precedence where we have them. One pre-election sample listed the SC Republican Senate nominee as "Darline Graham", so expect occasional data errors and check important calls against the news panel. Its licence requires attribution: the page credits "civicAPI (civicapi.org)" with a link. Keep that if you change the layout. To hide its calls, set `civicapi.useWinnerFlags` to `false`; to turn it off entirely, set `civicapi.enabled` to `false`.
+**About civicAPI.** It's a small independent project, not a news organization or election office. Its numbers and calls are labelled on every card, and official state counts take precedence where we have them. Check important calls against the news panel. Its licence requires attribution: the page credits "civicAPI (civicapi.org)" with a link. Keep that if you change the layout. To hide its calls, set `civicapi.useWinnerFlags` to `false`; to turn it off entirely, set `civicapi.enabled` to `false`.
 
 ## Run it
 
@@ -87,5 +87,6 @@ TLS verification is never turned off for the request. If automatic completion fa
 2. When prompted, set **`DASHBOARD_PASSWORD`**.
 3. Render gives you a URL like `https://election-night-desk.onrender.com`. Pushes to `main` redeploy automatically.
 4. Election morning: open the service's **Shell** tab and run `npm run check-states`.
+5. **Saved state.** `render.yaml` attaches a 1 GB disk at `/var/data` (`STATE_DIR`). Market trend lines, "since start" changes and the race-call log are saved there every minute and on shutdown, so restarts and redeploys don't wipe them. Calls that happen while the server is down are logged when it comes back, marked "found after restart". Saved state for a different `electionDate` is ignored. With a disk attached, Render stops the old instance before starting the new one, so each deploy means about a minute of downtime. Avoid deploying during the night. If your service wasn't created from the Blueprint, add the disk by hand (service → **Disks** → mount path `/var/data`) and set `STATE_DIR=/var/data`.
 
 To preview with fake data, add the env var `DEMO=1` temporarily. Remove it before polls close.

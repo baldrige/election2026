@@ -8,8 +8,15 @@ services:
     buildCommand: "true"     # no dependencies to install
     startCommand: node server.js
     healthCheckPath: /healthz
+    # Keeps market trend history and the race-call log across restarts and deploys (lib/persist.js).
+    disk:
+      name: dashboard-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: NODE_VERSION
         value: "22"
+      - key: STATE_DIR
+        value: /var/data
       - key: DASHBOARD_PASSWORD
         sync: false          # you'll be prompted for it on first deploy

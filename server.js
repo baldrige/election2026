@@ -9,6 +9,7 @@ const { StateFeedsProvider } = require('./lib/statefeeds');
 const { CivicApiProvider } = require('./lib/civicapi');
 const { mergeSenate } = require('./lib/merge');
 const { RaceOddsProvider } = require('./lib/raceodds');
+const persist = require('./lib/persist');
 const markets = require('./lib/markets');
 const news = require('./lib/news');
 const demo = require('./lib/demo');
@@ -47,15 +48,41 @@ if (raceOdds) raceOdds.start();
 const calledSeen = new Map();
 const startedAt = Date.now();
 const WARMUP_MS = 150 * 1000; // first full civicAPI cycle; calls seen then already existed, so they aren't logged as new
+
+// ---------- saved state (survives restarts and redeploys) ----------
+// On Render, STATE_DIR points at a persistent disk (see render.yaml). Locally it defaults to ./data.
+const STATE_FILE = path.join(process.env.STATE_DIR || path.join(__dirname, 'data'), 'dashboard-state.json');
+let restored = null;
+if (!DEMO) {
+  const r = persist.load(STATE_FILE, { electionDate: cfg.electionDate });
+  if (r.skipped) console.log(`  saved state: ${r.skipped}`);
+  else {
+    restored = r;
+    state.calls = r.calls;
+    for (const [k, v] of r.calledSeen) calledSeen.set(k, v);
+    state.markets.history = r.history;
+    console.log(`  saved state: restored ${r.calls.length} calls and ${Object.keys(r.history).length} market histories from ${new Date(r.savedAt).toISOString()}`);
+  }
+}
+function saveState() {
+  if (DEMO) return;
+  try { persist.save(STATE_FILE, { electionDate: cfg.electionDate, calls: state.calls, calledSeen, history: state.markets.history }); }
+  catch (e) { console.error('[persist] could not save state:', e.message); }
+}
+setInterval(saveState, 60 * 1000).unref();
+for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => { saveState(); process.exit(0); }); // Render sends SIGTERM on deploy
 function logCalls(races) {
   for (const r of races) {
     if (!r.winnerParty || calledSeen.get(r.id) === r.winnerParty) continue;
     const changed = calledSeen.has(r.id);
     calledSeen.set(r.id, r.winnerParty);
-    if (Date.now() - startedAt < WARMUP_MS) continue;
+    // Without saved state, calls seen during warm-up already existed at startup: don't log them as new.
+    // With saved state we know what was already called, so log them, marked as found after a restart.
+    const warm = Date.now() - startedAt < WARMUP_MS;
+    if (warm && !restored) continue;
     const w = r.candidates.find((c) => c.winner);
     state.calls.unshift({ ts: Date.now(), id: r.id, title: r.title, office: r.office, winner: w ? w.name : '',
-      party: r.winnerParty, changed, by: r.calledBy || '' });
+      party: r.winnerParty, changed, by: r.calledBy || '', ...(warm ? { afterRestart: true } : {}) });
   }
   state.calls = state.calls.slice(0, 300);
 }
@@ -117,7 +144,7 @@ async function pollMarkets() {
       const h = (state.markets.history[key] ||= []);
       h.label ||= label;
       if (h.label === label && p != null) h.push([now, p]);
-      if (h.length > 720) h.splice(0, h.length - 720);
+      if (h.length > 1440) h.splice(0, h.length - 1440); // 24 h at one point a minute
     };
     // Grouped (two-party) markets: track the Democratic probability, per platform and averaged.
     for (const g of groups) {

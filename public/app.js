@@ -204,7 +204,7 @@ function renderMarkets() {
 function renderCalls() {
   $('callList').innerHTML = S.calls && S.calls.length ? S.calls.slice(0, 80).map((c) => `
     <li><span class="when">${fmtTime(c.ts)}</span> <span class="called" style="background:${partyColor(c.party)}">${esc(partyLabel(c.party))}</span>
-      <b>${esc(c.title)}</b>${c.winner ? ` — ${esc(c.winner)}` : ''}${c.changed ? ' <span class="sub">(call changed)</span>' : ''}</li>`).join('')
+      <b>${esc(c.title)}</b>${c.winner ? ` — ${esc(c.winner)}` : ''}${c.changed ? ' <span class="sub">(call changed)</span>' : ''}${c.afterRestart ? ' <span class="sub" title="Called while the dashboard was restarting; time is when it was noticed">(found after restart)</span>' : ''}</li>`).join('')
     : `<li class="empty">${S.results.civic ? 'No new calls since the dashboard started.' : 'Calls come from civicAPI, which is turned off.'}</li>`;
 }
 function renderNews() {

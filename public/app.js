@@ -121,7 +121,7 @@ function renderRaces() {
     feeds.map((f) => `<li><span class="dot ${f.ok ? 'ok' : f.info ? '' : 'bad'}">${esc(f.state)}</span> ${f.url ? `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.message)}</a>` : esc(f.message)}${f.stale ? ' (showing last good data)' : ''}${f.updated ? ` <span class="sub">· ${ago(f.updated)}</span>` : ''}</li>`).join('')}</ul></details>` : '';
   const sel = /^[A-Z]{2}$/.test(ui.q.toUpperCase()) ? ui.q.toUpperCase() : null;
   window.renderRaceMap($('raceMap'), S.results.races, ui.office, {
-    esc, selected: sel,
+    esc, selected: sel, raceStates: S.config.raceStates, mapOdds: S.mapOdds,
     onPick: (st) => { ui.q = sel === st ? '' : st; $('search').value = ui.q; renderRaces(); },
   });
   const all = selectRaces(), list = all.slice(0, 90);

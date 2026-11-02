@@ -153,12 +153,18 @@ const server = http.createServer((req, res) => {
       config: {
         electionDate: cfg.electionDate,
         senateHoldovers: cfg.results.senateHoldovers,
+        // Every state with a 2026 Senate/Governor race, so the map shows them all even before results load.
+        raceStates: { S: (cfg.civicapi || {}).senateStates || [], G: (cfg.civicapi || {}).governorStates || [] },
       },
       results: { ...state.results, races: state.results.races.map((r) => {
         const odds = DEMO ? demo.demoRaceOdds(r) : raceOdds ? raceOdds.forRace(r) : null;
         return odds ? { ...r, odds } : r;
       }) },
       calls: state.calls,
+      // Odds for every configured Senate/Governor race, keyed "S:TX" (the map uses these when a race has no results yet).
+      mapOdds: Object.fromEntries(['S', 'G'].flatMap((o) => ((cfg.civicapi || {})[o === 'S' ? 'senateStates' : 'governorStates'] || [])
+        .map((st) => [`${o}:${st}`, DEMO ? demo.demoRaceOdds({ office: o, state: st }) : raceOdds ? raceOdds.forKey(`${o}:${st}`) : null]))
+        .filter(([, v]) => v)),
       markets: state.markets,
       news: state.news,
     });

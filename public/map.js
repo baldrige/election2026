@@ -15,6 +15,8 @@
     AZ: [2, 5], NM: [3, 5], KS: [4, 5], AR: [5, 5], TN: [6, 5], NC: [7, 5], SC: [8, 5], DC: [9, 5],
     OK: [4, 6], LA: [5, 6], MS: [6, 6], AL: [7, 6], GA: [8, 6], HI: [0, 7], TX: [4, 7], FL: [9, 7] };
 
+  // States too small for a label at the map's scale (still hoverable and clickable).
+  const SMALL = new Set(['RI', 'DE', 'CT', 'NJ', 'MD', 'DC', 'MA', 'NH', 'VT', 'HI']);
   let geo = null;
   fetch('/us-states.json').then((r) => r.json()).then((g) => { geo = g; if (window.renderRaces && window.S) window.renderRaces(); }).catch(() => {});
 
@@ -47,24 +49,35 @@
 
   function tipHtml(r, esc) {
     if (!r) return '';
+    if (r.none) return `<b>${esc(r.title)}</b><div>${esc(r.none)}</div>`;
     const m = marketDem(r);
     const head = `<b>${esc(r.title)}</b>`;
-    if (!r.odds) return `${head}<div>No prediction market found</div>`;
+    const pending = r.noResults ? '<div class="tip-sum">Results not loaded yet</div>' : '';
+    if (!r.odds) return `${head}${pending}<div>No prediction market found</div>`;
     const lines = Object.entries(r.odds).map(([src, d]) => `<div>${esc(src)}: ${d.o.slice(0, 3).map((x) => `${esc(x.n || x.p || '?')}${x.p && x.n ? ` (${esc(x.p === 'Dem' ? 'D' : x.p === 'GOP' ? 'R' : x.p)})` : ''} ${Math.round(x.v * 100)}%`).join(', ')}</div>`).join('');
     const sum = m && !m.other ? `<div class="tip-sum">${BINS[binOf(m.d)].label} · Dem ${Math.round(m.d * 100)}% / GOP ${Math.round((1 - m.d) * 100)}% (avg.)</div>` : m && m.other ? '<div class="tip-sum">Non-major-party candidate favoured</div>' : '<div class="tip-sum">Markets list candidates without parties</div>';
-    return head + sum + lines;
+    return head + pending + sum + lines;
   }
 
   const defs = '<defs><pattern id="map-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="var(--map-none)"/><line x1="0" y1="0" x2="0" y2="6" stroke="var(--ink-3)" stroke-width="1.4"/></pattern></defs>';
 
-  function stateMap(races, office, esc, selected) {
+  function stateMap(races, office, esc, selected, ctx) {
     if (!geo) return '<p class="empty">Loading map…</p>';
     const by = new Map(); for (const r of races) if (r.office === office && !by.has(r.state)) by.set(r.state, r);
+    // Every state with a 2026 race appears, even before its results load (odds come from mapOdds).
+    for (const st of (ctx.raceStates || {})[office] || []) {
+      if (!by.has(st)) by.set(st, { id: `map:${office}:${st}`, office, state: st, title: `${st} · ${office === 'S' ? 'U.S. Senate' : 'Governor'}`, candidates: [], odds: (ctx.mapOdds || {})[`${office}:${st}`] || null, noResults: true });
+      else if (!by.get(st).odds && (ctx.mapOdds || {})[`${office}:${st}`]) by.set(st, { ...by.get(st), odds: ctx.mapOdds[`${office}:${st}`] });
+    }
+    const label = office === 'S' ? 'Senate' : 'governor';
     const paths = Object.entries(geo.states).map(([st, d]) => {
       const r = by.get(st), f = fillFor(r);
-      return `<path d="${d}" fill="${f.fill}" class="st ${f.cls}${selected === st ? ' sel' : ''}" data-st="${st}" data-id="${r ? esc(r.id) : ''}"><title>${st}</title></path>`;
+      if (r) ctx.extra.set(r.id, r);
+      else ctx.extra.set(`none:${st}`, { title: `${st}`, none: `No ${label} race in 2026` });
+      return `<path d="${d}" fill="${f.fill}" class="st ${f.cls}${selected === st ? ' sel' : ''}" data-st="${st}" data-id="${r ? esc(r.id) : `none:${st}`}"></path>`;
     }).join('');
-    return `<svg viewBox="${geo.viewBox}" class="map-svg" role="img" aria-label="${office === 'S' ? 'Senate' : 'Governor'} races shaded by prediction-market odds">${defs}${paths}</svg>`;
+    const labels = Object.entries(geo.centroids || {}).filter(([st]) => !SMALL.has(st)).map(([st, [x, y]]) => `<text x="${x}" y="${y + 4}" class="st-lab${by.has(st) ? '' : ' none'}">${st}</text>`).join('');
+    return `<svg viewBox="${geo.viewBox}" class="map-svg" role="img" aria-label="${office === 'S' ? 'Senate' : 'Governor'} races shaded by prediction-market odds">${defs}${paths}${labels}</svg>`;
   }
 
   function houseMap(races, esc, selected) {
@@ -90,16 +103,18 @@
 
   function legend(office) {
     const sw = BINS.map((b, i) => `<span><i style="background:var(--div-${i})"></i>${b.label}<small>${b.range}</small></span>`).join('');
-    return `<div class="map-legend">${sw}<span><i class="hatch"></i>No party market</span><span><i style="background:var(--map-none)"></i>${office === 'H' ? 'No data' : 'No race'}</span></div>`;
+    return `<div class="map-legend">${sw}<span><i class="hatch"></i>No party market</span><span><i class="none"></i>${office === 'H' ? 'No data' : 'No race in 2026'}</span></div>`;
   }
 
   // Public: render into el. onPick(state) is called when a state/district is clicked.
-  window.renderRaceMap = function (el, races, office, { esc, selected, onPick }) {
-    const inner = office === 'H' ? houseMap(races, esc, selected) : stateMap(races, office, esc, selected);
+  window.renderRaceMap = function (el, races, office, { esc, selected, onPick, raceStates, mapOdds }) {
+    const ctx = { raceStates, mapOdds, extra: new Map() };
+    const inner = office === 'H' ? houseMap(races, esc, selected) : stateMap(races, office, esc, selected, ctx);
     const counts = { mkt: 0, total: 0 };
-    for (const r of races) if (r.office === office) { counts.total++; if (marketDem(r) && !marketDem(r).other) counts.mkt++; }
+    const counted = office === 'H' ? races.filter((r) => r.office === 'H') : [...ctx.extra.values()].filter((r) => !r.none);
+    for (const r of counted) { counts.total++; if (marketDem(r) && !marketDem(r).other) counts.mkt++; }
     el.innerHTML = `<div class="map-wrap">${inner}<div class="map-tip" hidden></div></div>${legend(office)}<div class="map-note">Shaded by the average Democratic vs. Republican price on Kalshi and Polymarket (${counts.mkt} of ${counts.total} races have a party market). Traders' bets, not results. ${office === 'H' ? 'One square per district, grouped by state. ' : ''}Click a state to filter the cards.</div>`;
-    const byId = new Map(races.map((r) => [r.id, r]));
+    const byId = new Map([...races.map((r) => [r.id, r]), ...ctx.extra]);
     const tip = el.querySelector('.map-tip'), wrap = el.querySelector('.map-wrap');
     el.onmousemove = (e) => {
       const t = e.target.closest('[data-id]');

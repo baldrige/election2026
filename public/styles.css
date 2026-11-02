@@ -3,7 +3,7 @@
   --dem: #2f6fde; --gop: #d6403a; --oth: #8a5cc9; --uncalled: #d9d9d4;
   --warn-bg: #fff4e0; --warn-ink: #7a4a00; --demo: #b3261e;
   --div-0: #2f6fde; --div-1: #6e96d9; --div-2: #9db2d3; --div-3: #cfcec8; --div-4: #d8a59b; --div-5: #da7d71; --div-6: #d6403a;
-  --map-none: #efefec; --map-line: #fcfcfb;
+  --map-none: #f4f3ef; --map-line: #fcfcfb; --map-none-edge: #a9a8a2;
   --radius: 10px;
   color-scheme: light;
 }
@@ -13,7 +13,7 @@
     --dem: #4f86ea; --gop: #dc5448; --oth: #9a72d8; --uncalled: #3a3a37;
     --warn-bg: #3a2a10; --warn-ink: #f3c77a; --demo: #ff8a80; color-scheme: dark;
     --div-0: #4f86ea; --div-1: #5375ae; --div-2: #556680; --div-3: #55554f; --div-4: #82594f; --div-5: #aa594d; --div-6: #dc5448;
-    --map-none: #232322; --map-line: #1a1a19;
+    --map-none: #222221; --map-line: #1a1a19; --map-none-edge: #6b6b66;
   }
 }
 * { box-sizing: border-box; }
@@ -136,6 +136,9 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; padding: 4px 
 .map-wrap { position: relative; }
 .map-svg { display: block; width: 100%; height: auto; max-height: 420px; }
 .map-svg .st { stroke: var(--map-line); stroke-width: 1; cursor: pointer; }
+.map-svg .st.none { stroke: var(--map-none-edge); stroke-width: .8; }
+.map-svg .st-lab { font-size: 11px; font-weight: 600; fill: var(--ink); text-anchor: middle; pointer-events: none; paint-order: stroke; stroke: var(--surface); stroke-width: 2.5px; stroke-opacity: .7; }
+.map-svg .st-lab.none { fill: var(--ink-3); stroke: none; font-weight: 500; }
 .map-svg .st:hover, .map-svg .dist:hover { stroke: var(--ink); stroke-width: 1.5; }
 .map-svg .st.sel { stroke: var(--ink); stroke-width: 2.5; }
 .map-svg .dist { cursor: pointer; }
@@ -148,5 +151,6 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; padding: 4px 
 .map-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--ink-2); margin-top: 6px; }
 .map-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 4px; vertical-align: -2px; }
 .map-legend small { color: var(--ink-3); margin-left: 3px; }
+.map-legend i.none { background: var(--map-none); box-shadow: inset 0 0 0 1px var(--map-none-edge); }
 .map-legend i.hatch { background: repeating-linear-gradient(45deg, var(--ink-3) 0 1.5px, var(--map-none) 1.5px 5px); }
 .map-note { font-size: 11px; color: var(--ink-3); margin-top: 4px; }

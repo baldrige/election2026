@@ -78,6 +78,15 @@ const t = async (name, fn) => { await fn(); n++; console.log('  ok', name); };
     assert.ok(p.forRace({ office: 'G', state: 'TX' }).Kalshi);
   });
 
+  await t('odds are fetched for every configured Senate/Governor race, even before results load', async () => {
+    const urls = [];
+    global.fetch = async (url) => { urls.push(url); return ok({ markets: [] }); };
+    const p = new R.RaceOddsProvider({ ...cfg, civicapi: { senateStates: ['TX', 'GA'], governorStates: ['TX'] } });
+    p.setRaces([{ office: 'H', state: 'AK', district: 'AK-AL' }]); // results so far: one House race only
+    await p.kalshiPass();
+    assert.match(urls[0], /event_ticker=SENATETX-26,SENATEGA-26,GOVPARTYTX-26,HOUSEAKAL-26/);
+  });
+
   await t('Kalshi 429 pauses every Kalshi request (shared throttle)', async () => {
     const { Gate } = require('../lib/kalshi');
     const g = new Gate(1); let calls = 0;

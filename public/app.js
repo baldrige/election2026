@@ -119,6 +119,11 @@ function renderRaces() {
   $('feedStatus').hidden = !feeds.length;
   $('feedStatus').innerHTML = feeds.length ? `<details${ui.feedsOpen ? ' open' : ''}><summary>Results sources: ${feeds.filter((f) => f.ok).length} of ${feeds.filter((f) => !f.info).length} working${feeds.some((f) => f.info) ? ` · ${feeds.filter((f) => f.info).map((f) => f.state).join(', ')} have no state feed` : ''}</summary><ul>${
     feeds.map((f) => `<li><span class="dot ${f.ok ? 'ok' : f.info ? '' : 'bad'}">${esc(f.state)}</span> ${f.url ? `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.message)}</a>` : esc(f.message)}${f.stale ? ' (showing last good data)' : ''}${f.updated ? ` <span class="sub">· ${ago(f.updated)}</span>` : ''}</li>`).join('')}</ul></details>` : '';
+  const sel = /^[A-Z]{2}$/.test(ui.q.toUpperCase()) ? ui.q.toUpperCase() : null;
+  window.renderRaceMap($('raceMap'), S.results.races, ui.office, {
+    esc, selected: sel,
+    onPick: (st) => { ui.q = sel === st ? '' : st; $('search').value = ui.q; renderRaces(); },
+  });
   const all = selectRaces(), list = all.slice(0, 90);
   const total = S.results.races.filter((r) => r.office === ui.office).length;
   $('raceList').innerHTML = list.length ? list.map(raceCard).join('') + (all.length > list.length ? `<p class="more">Showing ${list.length} of ${all.length}. Search a state or district to narrow.</p>` : '')
@@ -224,16 +229,23 @@ function renderStatus() {
   $('credit').innerHTML = `Results: ${esc(S.results.provider || '—')}${S.results.updated ? ` · updated ${fmtTime(S.results.updated)} ET` : ''}${S.results.civic ? ' · Governor, House and some Senate data and all race calls: <a href="https://civicapi.org" target="_blank" rel="noopener">civicAPI (civicapi.org)</a>' : ''} · State-site figures are unofficial election-night counts · Markets: Kalshi, Polymarket, PredictIt · Headlines link to their publishers`;
 }
 
-function renderAll() { renderBop(); renderRaces(); renderMarkets(); renderCalls(); renderNews(); renderPolls(); renderStatus(); }
+// Each panel renders on its own, so a bug in one can't blank the others.
+function renderAll() {
+  for (const fn of [renderBop, renderRaces, renderMarkets, renderCalls, renderNews, renderPolls, renderStatus]) {
+    try { fn(); } catch (e) { console.error(`${fn.name} failed:`, e); }
+  }
+}
 
 async function refresh() {
   try {
     const r = await fetch('/api/state', { cache: 'no-store' });
     S = await r.json();
-    renderAll();
+    window.S = S;
   } catch (e) {
     $('status').innerHTML = '<span class="dot bad">Server unreachable</span>';
+    return;
   }
+  renderAll();
 }
 
 function tick() { $('clock').textContent = new Date().toLocaleTimeString('en-US', { ...ET, hour: 'numeric', minute: '2-digit', second: '2-digit' }) + ' ET'; if (S) renderPolls(); }

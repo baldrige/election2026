@@ -80,8 +80,10 @@ function selectRaces() {
 // Market odds under the tally: one line per platform, top two outcomes.
 function oddsBlock(r) {
   if (!r.odds) return '';
-  const lab = (x) => x.p && (x.p === 'Dem' || x.p === 'GOP') ? partyLabel(x.p) : x.n ? x.n.split(' ').slice(-1)[0] : partyLabel(x.p);
   const rows = Object.entries(r.odds).map(([src, d]) => {
+    // Party letter normally; last name when the shown outcomes share a party (D vs D) or have none.
+    const sameParty = d.o.length > 1 && d.o[0].p && d.o[0].p === d.o[1].p;
+    const lab = (x) => !sameParty && (x.p === 'Dem' || x.p === 'GOP') ? partyLabel(x.p) : x.n ? x.n.split(' ').slice(-1)[0] : partyLabel(x.p);
     // Keep D left / R right when both parties are listed, so columns line up across rows and cards.
     const two = d.o.slice(0, 2), rank = { Dem: 0, GOP: 1 };
     if (two.every((x) => x.p in rank)) two.sort((a, b) => rank[a.p] - rank[b.p]);

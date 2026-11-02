@@ -56,7 +56,8 @@
     if (!r.odds) return `${head}${pending}<div>No prediction market found</div>`;
     const lines = Object.entries(r.odds).map(([src, d]) => `<div>${esc(src)}: ${d.o.slice(0, 3).map((x) => `${esc(x.n || x.p || '?')}${x.p && x.n ? ` (${esc(x.p === 'Dem' ? 'D' : x.p === 'GOP' ? 'R' : x.p)})` : ''} ${Math.round(x.v * 100)}%`).join(', ')}</div>`).join('');
     const sum = m && !m.other ? `<div class="tip-sum">${BINS[binOf(m.d)].label} · Dem ${Math.round(m.d * 100)}% / GOP ${Math.round((1 - m.d) * 100)}% (avg.)</div>` : m && m.other ? '<div class="tip-sum">Non-major-party candidate favoured</div>' : '<div class="tip-sum">Markets list candidates without parties</div>';
-    return head + pending + sum + lines;
+    const matched = Object.values(r.odds).some((d) => d.o.some((x) => x.matched)) ? '<div class="tip-sum">Some parties matched from the candidate list (market lists names only)</div>' : '';
+    return head + pending + sum + lines + matched;
   }
 
   const defs = '<defs><pattern id="map-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="var(--map-none)"/><line x1="0" y1="0" x2="0" y2="6" stroke="var(--ink-3)" stroke-width="1.4"/></pattern></defs>';

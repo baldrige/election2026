@@ -87,6 +87,28 @@ const t = async (name, fn) => { await fn(); n++; console.log('  ok', name); };
     assert.match(urls[0], /event_ticker=SENATETX-26,SENATEGA-26,GOVPARTYTX-26,HOUSEAKAL-26/);
   });
 
+  await t('name-only market outcomes get the party of the matching race candidate', () => {
+    const { partyForName } = R;
+    const cands = [{ name: 'KEN PAXTON', party: 'GOP' }, { name: 'JAMES TALARICO', party: 'Dem' }, { name: 'BRADFORD "BRAD" HALL', party: 'Oth' },
+      { name: 'Nick Begich III', party: 'GOP' }, { name: 'José García', party: 'Dem' }, { name: 'Mike García', party: 'GOP' }];
+    assert.strictEqual(partyForName('Ken Paxton', cands), 'GOP', 'case-insensitive');
+    assert.strictEqual(partyForName('Brad Hall', cands), 'Oth', 'nickname in quotes ignored, first initial + last name');
+    assert.strictEqual(partyForName('Nick Begich', cands), 'GOP', 'suffix ignored');
+    assert.strictEqual(partyForName('Jose Garcia', cands), 'Dem', 'accents ignored, first initial separates same surnames');
+    assert.strictEqual(partyForName('Garcia', cands), null, 'ambiguous surname is left unassigned');
+    assert.strictEqual(partyForName('Pat Smith', cands, { 'Pat Smith': 'Ind' }), 'Ind', 'config override');
+  });
+
+  await t('California top-two (real Polymarket event): parties filled from the race candidates', () => {
+    const p = new R.RaceOddsProvider({ ...cfg, civicapi: { senateStates: [], governorStates: ['CA'] } });
+    const ca = fx('polymarket_california-governor.json');
+    p.put('G:CA', 'Polymarket', R.polymarketOutcomes(ca), '#');
+    p.setRaces([{ office: 'G', state: 'CA', candidates: [{ name: 'Xavier Becerra', party: 'Dem' }, { name: 'Steve Hilton', party: 'GOP' }] }]);
+    const o = p.forKey('G:CA').Polymarket.o;
+    assert.deepStrictEqual(o.slice(0, 2).map((x) => [x.n, x.p, !!x.matched]), [['Xavier Becerra', 'Dem', true], ['Steve Hilton', 'GOP', true]]);
+    assert.strictEqual(o[2].p, null, 'a market candidate not on the ballot stays unassigned');
+  });
+
   await t('Kalshi 429 pauses every Kalshi request (shared throttle)', async () => {
     const { Gate } = require('../lib/kalshi');
     const g = new Gate(1); let calls = 0;

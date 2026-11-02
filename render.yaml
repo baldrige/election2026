@@ -13,5 +13,3 @@ services:
         value: "22"
       - key: DASHBOARD_PASSWORD
         sync: false          # you'll be prompted for it on first deploy
-      - key: AP_API_KEY
-        sync: false          # paste your AP key when you have it (leave blank until then)

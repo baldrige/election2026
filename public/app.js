@@ -16,70 +16,47 @@ function ago(ts) {
   return new Date(ts).toLocaleDateString('en-US', { ...ET, month: 'short', day: 'numeric' });
 }
 
-const ui = { office: 'S', view: 'watch', q: '', feedsOpen: false };
+const ui = { feedsOpen: false };
 let S = null; // last server state
 
-// ---------- balance of power ----------
-function tally(races, office) {
-  const t = { Dem: 0, GOP: 0, Oth: 0, open: 0, total: 0 };
-  for (const r of races) {
-    if (r.office !== office) continue;
-    t.total++;
-    if (!r.winnerParty) t.open++;
-    else if (r.winnerParty === 'Dem' || r.winnerParty === 'GOP') t[r.winnerParty]++;
-    else t.Oth++;
-  }
-  return t;
-}
-function bopCard(title, d, g, o, open, total, need, foot) {
-  const pct = (n) => (100 * n) / total;
-  const seg = (n, color, label) => n ? `<span style="width:${pct(n)}%;background:${color}" title="${label}: ${n}"></span>` : '';
-  return `<div class="bop-card">
-    <h3>${title}</h3>
-    <div class="bop-nums">
-      <span class="d"><span class="sw" style="background:var(--dem)"></span><span class="lab">Dem</span> <b>${d}</b></span>
-      <span class="lab">${open} uncalled${o ? ` · ${o} other` : ''}</span>
-      <span class="d"><b>${g}</b> <span class="lab">GOP</span><span class="sw" style="background:var(--gop);margin:0 0 0 4px"></span></span>
-    </div>
-    <div class="bar" role="img" aria-label="${title}: Democrats ${d}, Republicans ${g}, other ${o}, uncalled ${open}">
-      ${seg(d, 'var(--dem)', 'Dem')}${seg(open, 'var(--uncalled)', 'Uncalled')}${seg(o, 'var(--oth)', 'Other')}${seg(g, 'var(--gop)', 'GOP')}
-      ${need ? `<i class="tick" style="left:${pct(need) - 0.2}%"></i>` : ''}
-    </div>
-    <div class="bop-foot">${foot}</div>
-  </div>`;
-}
+// ---------- Senate balance ----------
+// States don't call races, so this shows seats not on the ballot (solid) plus who LEADS the
+// count in each tracked race (light). Leading is not winning; the card says so.
 function renderBop() {
-  const races = S.results.races;
   const h = S.config.senateHoldovers || { Dem: 0, GOP: 0 };
-  const s = tally(races, 'S'), hs = tally(races, 'H'), g = tally(races, 'G');
-  const html = [];
-  if (s.total) {
-    const total = 100, d = s.Dem + h.Dem, r = s.GOP + h.GOP, open = total - d - r - s.Oth;
-    html.push(bopCard('Senate', d, r, s.Oth, open, total, 50,
-      `Includes ${h.Dem} D / ${h.GOP} R seats not up. Control: Dem needs 51; GOP needs 50 (VP tiebreak). Independents shown as other.${S.results.apEnabled ? '' : ' State sites don\'t call races, so without AP this bar only shows seats not on the ballot.'}`));
+  const lead = { Dem: 0, GOP: 0, Oth: 0 };
+  const tracked = S.results.races.filter((r) => r.office === 'S');
+  for (const r of tracked) {
+    const [a, b] = r.candidates;
+    if (!a || !a.votes || (b && a.votes === b.votes)) continue;
+    lead[a.party === 'Dem' || a.party === 'GOP' ? a.party : 'Oth']++;
   }
-  if (hs.total) html.push(bopCard('House', hs.Dem, hs.GOP, hs.Oth, hs.open, hs.total, 218, `${hs.total} seats tracked · 218 for majority`));
-  if (g.total) html.push(bopCard('Governors', g.Dem, g.GOP, g.Oth, g.open, g.total, 0, `${g.total} races on the ballot (seats not up aren't counted)`));
-  $('bop').innerHTML = html.join('') || `<div class="bop-card"><h3>Balance of power</h3><p class="sub">Appears once the results provider returns races.</p></div>`;
+  const rest = 100 - h.Dem - h.GOP - lead.Dem - lead.GOP - lead.Oth;
+  const seg = (n, color, cls, label) => n > 0 ? `<span class="${cls}" style="width:${n}%;background:${color}" title="${label}: ${n}"></span>` : '';
+  const plus = (n) => n ? ` <span class="plus">+${n} leading</span>` : '';
+  $('bop').innerHTML = `<div class="bop-card">
+    <h3>Senate</h3>
+    <div class="bop-nums">
+      <span class="d"><span class="sw" style="background:var(--dem)"></span><span class="lab">Dem</span> <b>${h.Dem}</b>${plus(lead.Dem)}</span>
+      <span class="d">${plus(lead.GOP)} <b>${h.GOP}</b> <span class="lab">GOP</span><span class="sw" style="background:var(--gop);margin:0 0 0 4px"></span></span>
+    </div>
+    <div class="bar" role="img" aria-label="Senate: Democrats ${h.Dem} not up plus ${lead.Dem} leading; Republicans ${h.GOP} not up plus ${lead.GOP} leading; ${rest} other">
+      ${seg(h.Dem, 'var(--dem)', '', 'Dem, not up')}${seg(lead.Dem, 'var(--dem)', 'lead', 'Dem leading')}${seg(rest, 'var(--uncalled)', '', 'No count / not tracked')}${seg(lead.Oth, 'var(--oth)', 'lead', 'Other leading')}${seg(lead.GOP, 'var(--gop)', 'lead', 'GOP leading')}${seg(h.GOP, 'var(--gop)', '', 'GOP, not up')}
+      <i class="tick" style="left:${50 - 0.2}%"></i>
+    </div>
+    <div class="bop-key">
+      <span><i style="background:var(--ink-2)"></i>Seats not up in 2026</span>
+      <span><i style="background:var(--ink-2);opacity:.45"></i>Leading the count (not called)</span>
+      <span><i style="background:var(--uncalled)"></i>No count yet / not tracked: ${rest}</span>${lead.Oth ? `
+      <span><i style="background:var(--oth);opacity:.45"></i>Other candidate leading: ${lead.Oth}</span>` : ''}
+    </div>
+    <div class="bop-foot">${tracked.length} of 35 races on the ballot are tracked from state sites. Control: Dem needs 51; GOP needs 50 (VP tiebreak). Leads can change as votes are counted — follow the news panel for race calls.</div>
+  </div>`;
 }
 
 // ---------- races ----------
-function margin(r) { const [a, b] = r.candidates; return a && b ? a.pct - b.pct : 100; }
 function selectRaces() {
-  let list = S.results.races.filter((r) => r.office === ui.office);
-  const watch = (S.config.watchStates || {})[ui.office] || [];
-  if (ui.q) {
-    const q = ui.q.toUpperCase();
-    list = list.filter((r) => (r.district || r.state).toUpperCase().includes(q) || r.title.toUpperCase().includes(q));
-  } else if (ui.view === 'watch' && watch.length) {
-    list = list.filter((r) => watch.includes(r.district || r.state) || watch.includes(r.state) && ui.office !== 'H')
-      .sort((a, b) => watch.indexOf(a.district || a.state) - watch.indexOf(b.district || b.state));
-  } else if (ui.view === 'close' || ui.view === 'watch') {
-    list = list.filter((r) => !r.winnerParty && r.eevp > 0).sort((a, b) => margin(a) - margin(b));
-  } else {
-    list = list.sort((a, b) => (a.district || a.state).localeCompare(b.district || b.state));
-  }
-  return list.slice(0, 80);
+  return S.results.races.filter((r) => r.office === 'S').sort((a, b) => a.state.localeCompare(b.state) || (a.special ? 1 : 0) - (b.special ? 1 : 0));
 }
 function raceCard(r) {
   const w = r.candidates.find((c) => c.winner);
@@ -102,12 +79,12 @@ function renderRaces() {
   $('raceErr').hidden = !err;
   $('raceErr').textContent = err ? `Results: ${err}` : '';
   const feeds = S.results.feeds || [];
-  $('feedStatus').hidden = !feeds.length || ui.office !== 'S';
+  $('feedStatus').hidden = !feeds.length;
   $('feedStatus').innerHTML = feeds.length ? `<details${ui.feedsOpen ? ' open' : ''}><summary>State results feeds: ${feeds.filter((f) => f.ok).length} of ${feeds.filter((f) => !f.info).length} working${feeds.some((f) => f.info) ? ` · ${feeds.filter((f) => f.info).map((f) => f.state).join(', ')} have no state feed` : ''}</summary><ul>${
     feeds.map((f) => `<li><span class="dot ${f.ok ? 'ok' : f.info ? '' : 'bad'}">${esc(f.state)}</span> ${f.url ? `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.message)}</a>` : esc(f.message)}${f.stale ? ' (showing last good data)' : ''}${f.updated ? ` <span class="sub">· ${ago(f.updated)}</span>` : ''}</li>`).join('')}</ul></details>` : '';
   const list = selectRaces();
   $('raceList').innerHTML = list.length ? list.map(raceCard).join('')
-    : `<p class="empty">${S.results.races.length ? 'No races match.' : 'Waiting for results…'}</p>`;
+    : '<p class="empty">Waiting for state results…</p>';
 }
 
 // ---------- markets ----------
@@ -144,13 +121,7 @@ function renderMarkets() {
   }).join('') : '<p class="empty">Waiting for market data…</p>';
 }
 
-// ---------- calls / news / polls ----------
-function renderCalls() {
-  $('callList').innerHTML = S.calls.length ? S.calls.slice(0, 60).map((c) => `
-    <li><span class="when">${fmtTime(c.ts)}</span> <span class="called" style="background:${partyColor(c.party)}">${esc(partyLabel(c.party))}</span>
-      <b>${esc(c.title)}</b>${c.winner ? ` — ${esc(c.winner)}` : ''}${c.changed ? ' <span class="sub">(call changed)</span>' : ''}</li>`).join('')
-    : '<li class="empty">No new calls since the dashboard started.</li>';
-}
+// ---------- news / polls ----------
 function renderNews() {
   const { items, errors } = S.news;
   $('newsErr').hidden = !errors.length;
@@ -184,7 +155,7 @@ function renderStatus() {
   $('credit').textContent = `Results: ${S.results.provider || '—'}${S.results.updated ? ` · updated ${fmtTime(S.results.updated)} ET` : ''} · Markets: Kalshi, Polymarket, PredictIt · Headlines link to their publishers${(S.results.feeds || []).length ? ' · State-site figures are unofficial election-night counts' : ''}`;
 }
 
-function renderAll() { renderBop(); renderRaces(); renderMarkets(); renderCalls(); renderNews(); renderPolls(); renderStatus(); }
+function renderAll() { renderBop(); renderRaces(); renderMarkets(); renderNews(); renderPolls(); renderStatus(); }
 
 async function refresh() {
   try {
@@ -198,15 +169,7 @@ async function refresh() {
 
 function tick() { $('clock').textContent = new Date().toLocaleTimeString('en-US', { ...ET, hour: 'numeric', minute: '2-digit', second: '2-digit' }) + ' ET'; if (S) renderPolls(); }
 
-$('officeTabs').addEventListener('click', (e) => {
-  const b = e.target.closest('button'); if (!b) return;
-  ui.office = b.dataset.office;
-  [...$('officeTabs').children].forEach((x) => x.classList.toggle('on', x === b));
-  if (S) renderRaces();
-});
 $('feedStatus').addEventListener('toggle', (e) => { ui.feedsOpen = e.target.open; }, true);
-$('viewSel').addEventListener('change', (e) => { ui.view = e.target.value; if (S) renderRaces(); });
-$('search').addEventListener('input', (e) => { ui.q = e.target.value.trim(); if (S) renderRaces(); });
 
 tick(); setInterval(tick, 1000);
 refresh(); setInterval(refresh, 10000);

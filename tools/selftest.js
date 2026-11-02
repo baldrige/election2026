@@ -27,15 +27,6 @@ global.fetch = async (url) => {
   const pi = await m.predictit({ baseUrl: cfg.predictit.baseUrl, marketIds: [1] });
   assert.strictEqual(pi[0].outcomes[0].label, 'Dem');
 
-  const { normalizeApRace } = require('../lib/results');
-  const r = normalizeApRace({ raceID: '12345', statePostal: 'GA', officeID: 'S', officeName: 'U.S. Senate', raceType: 'General',
-    reportingUnits: [{ level: 'state', eevp: 87.4, lastUpdated: '2026-11-04T02:01:00Z', candidates: [
-      { first: 'Jane', last: 'Roe', party: 'GOP', voteCount: 1500000 },
-      { first: 'John', last: 'Doe', party: 'Dem', voteCount: 1600000, winner: 'X' }] }] });
-  assert.strictEqual(r.winnerParty, 'Dem'); assert.strictEqual(r.candidates[0].name, 'John Doe'); assert.strictEqual(r.eevp, 87.4);
-  const h = normalizeApRace({ raceID: '9', statePostal: 'PA', officeID: 'H', seatNum: '7', reportingUnits: [{ level: 'state', candidates: [] }] });
-  assert.strictEqual(h.district, 'PA-07');
-
   const { parseFeed } = require('../lib/news');
   const rss = parseFeed(`<rss><channel><item><title><![CDATA[Polls close &amp; counting begins]]></title><link>https://a/1</link>
     <pubDate>Tue, 03 Nov 2026 19:05:00 -0500</pubDate><description>&lt;p&gt;Hi&lt;/p&gt;</description></item></channel></rss>`, 'X');

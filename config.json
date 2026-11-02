@@ -3,51 +3,13 @@
   "port": 8080,
   "electionDate": "2026-11-03",
   "results": {
-    "provider": "ap",
-    "_provider_note": "ap = Associated Press Elections API (needs AP_API_KEY env var). demo = clearly-labelled fake data for testing the UI.",
-    "apBaseUrl": "https://api.ap.org/v3",
-    "offices": [
-      "S",
-      "H",
-      "G"
-    ],
     "pollSeconds": 30,
-    "_holdovers_note": "Senate seats NOT on the 2026 ballot (verify before election day). Independents who caucus with Democrats are counted as Dem.",
+    "_holdovers_note": "Senate seats NOT on the 2026 ballot (verify). Independents who caucus with Democrats are counted as Dem. 35 seats are on the ballot.",
     "senateHoldovers": {
       "Dem": 34,
       "GOP": 31
     },
-    "watchStates": {
-      "S": [
-        "GA",
-        "MI",
-        "NC",
-        "ME",
-        "NH",
-        "OH",
-        "TX",
-        "IA",
-        "AK",
-        "MN",
-        "NE",
-        "FL"
-      ],
-      "G": [
-        "AZ",
-        "GA",
-        "MI",
-        "WI",
-        "PA",
-        "NV",
-        "KS",
-        "NY",
-        "OH",
-        "IA"
-      ],
-      "H": []
-    },
-    "_watchHouseNote": "For House races use state-district codes like \"PA-07\". Leave empty to show the closest House races automatically.",
-    "_stateFeedsNote": "Free official state results for the Senate watch list (counts only, no race calls). URLs below are filled from defaults in lib/states/<st>.js unless you set \"url\". Check them on election morning with: node tools/check-states.js",
+    "_stateFeedsNote": "Official state results for the Senate race (counts only, no race calls). URLs come from lib/states/<st>.js unless you set \"url\". Check on election morning with: npm run check-states",
     "stateFeeds": {
       "GA": {
         "enabled": true,

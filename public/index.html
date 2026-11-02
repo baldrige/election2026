@@ -24,20 +24,8 @@
 
   <section class="panel races">
     <div class="panel-head">
-      <h2>Races</h2>
-      <div class="filters">
-        <div class="seg" role="tablist" id="officeTabs">
-          <button data-office="S" class="on">Senate</button>
-          <button data-office="G">Governor</button>
-          <button data-office="H">House</button>
-        </div>
-        <select id="viewSel" aria-label="Which races">
-          <option value="watch">Watch list</option>
-          <option value="close">Closest uncalled</option>
-          <option value="all">All</option>
-        </select>
-        <input id="search" type="search" placeholder="State or district…" aria-label="Filter races">
-      </div>
+      <h2>Senate races</h2>
+      <span class="sub">U.S. Senate · official state counts · races are not called here</span>
     </div>
     <div id="raceErr" class="err" hidden></div>
     <div id="feedStatus" class="feeds" hidden></div>
@@ -49,11 +37,6 @@
     <div id="mktErr" class="err" hidden></div>
     <div id="mktList" class="mkt-list"></div>
     <p class="fine">Market prices reflect traders' bets, not forecasts or results.</p>
-  </section>
-
-  <section class="panel calls">
-    <div class="panel-head"><h2>Race calls</h2><span class="sub">As reported by the results provider</span></div>
-    <ol id="callList" class="call-list"></ol>
   </section>
 
   <section class="panel news">

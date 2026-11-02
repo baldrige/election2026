@@ -2,7 +2,7 @@
   "name": "election-night-desk",
   "version": "1.0.0",
   "private": true,
-  "description": "Election day/night dashboard: AP vote tallies, prediction markets, news headlines.",
+  "description": "Election day/night dashboard: official state Senate results, prediction markets, news headlines.",
   "engines": { "node": ">=18" },
   "scripts": {
     "start": "node server.js",

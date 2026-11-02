@@ -25,7 +25,7 @@ function balance(office) {
   const t = { called: { Dem: 0, GOP: 0, Oth: 0 }, lead: { Dem: 0, GOP: 0, Oth: 0 }, n: 0 };
   const P = (p) => (p === 'Dem' || p === 'GOP' ? p : 'Oth');
   for (const r of S.results.races) {
-    if (r.office !== office) continue;
+    if (r.office !== office || r.pending) continue;
     t.n++;
     if (r.winnerParty) { t.called[P(r.winnerParty)]++; continue; }
     const [a, b] = r.candidates;
@@ -92,7 +92,16 @@ function oddsBlock(r) {
   }).join('');
   return `<div class="race-odds" title="Prediction-market prices: traders' bets, not results">${rows}</div>`;
 }
+function pendingCard(r) {
+  return `<article class="race pending">
+    <div class="race-h"><b>${esc(r.state)}${r.special ? ' <span class="sub">special</span>' : ''}</b><span class="rep">No results yet</span></div>
+    <p class="pend-msg">No results source has this race yet.</p>
+    ${oddsBlock(r)}
+    ${r.pendingWhy && r.pendingWhy.length ? `<details class="pend-why"><summary>Why</summary>${r.pendingWhy.map((w) => `<div>${esc(w)}</div>`).join('')}</details>` : ''}
+  </article>`;
+}
 function raceCard(r) {
+  if (r.pending) return pendingCard(r);
   const w = r.candidates.find((c) => c.winner);
   // Before any votes are counted, sources can still report units as "reporting" (blank uploads),
   // so show "No votes yet" and keep the source's own figure in the tooltip.

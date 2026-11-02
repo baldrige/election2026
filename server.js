@@ -60,6 +60,24 @@ function logCalls(races) {
   state.calls = state.calls.slice(0, 300);
 }
 
+function placeholders(races, feeds) {
+  const have = new Set(races.map((r) => `${r.office}:${r.state}`));
+  const feedBy = new Map(feeds.map((f) => [f.state, f]));
+  const out = [];
+  for (const [office, list] of [['S', (cfg.civicapi || {}).senateStates || []], ['G', (cfg.civicapi || {}).governorStates || []]]) {
+    for (const st of list) {
+      if (have.has(`${office}:${st}`)) continue;
+      const why = [];
+      const f = office === 'S' && feedBy.get(st);
+      if (f && !f.ok) why.push(`State site: ${f.message}`);
+      if (civic) why.push(`civicAPI: ${civic.raceError(office, st) || 'no data'}`);
+      out.push({ id: `pending:${office}:${st}`, state: st, office, district: null, special: st === 'OH' && office === 'S' || st === 'FL' && office === 'S',
+        title: `${st} · ${office === 'S' ? 'U.S. Senate' : 'Governor'}`, candidates: [], winnerParty: null, pending: true, pendingWhy: why });
+    }
+  }
+  return out;
+}
+
 async function pollResults() {
   try {
     const stRaces = await provider.fetch();
@@ -72,6 +90,8 @@ async function pollResults() {
       const cs = civic.status();
       feeds.push({ state: 'civicAPI', ok: cs.ok, message: cs.message + (cs.errorCount ? ` · ${cs.errorCount} not available yet (e.g. ${cs.errors.join('; ')})` : ''), url: 'https://civicapi.org', updated: cs.ok ? Date.now() : null });
     }
+    // Every Senate/Governor race on the ballot gets a card, even without results, with the reason.
+    if (!DEMO) races = [...races, ...placeholders(races, feeds)];
     logCalls(races);
     if (raceOdds) {
       raceOdds.setRaces(races);

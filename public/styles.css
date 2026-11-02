@@ -154,3 +154,8 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; padding: 4px 
 .map-legend i.none { background: var(--map-none); box-shadow: inset 0 0 0 1px var(--map-none-edge); }
 .map-legend i.hatch { background: repeating-linear-gradient(45deg, var(--ink-3) 0 1.5px, var(--map-none) 1.5px 5px); }
 .map-note { font-size: 11px; color: var(--ink-3); margin-top: 4px; }
+.race.pending { border-style: dashed; }
+.pend-msg { margin: 6px 0 0; font-size: 12px; color: var(--ink-2); }
+.pend-why { margin-top: 6px; font-size: 11px; color: var(--ink-3); overflow-wrap: anywhere; }
+.pend-why summary { cursor: pointer; color: var(--ink-2); }
+.pend-why div { margin-top: 3px; }

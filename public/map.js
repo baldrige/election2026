@@ -52,7 +52,7 @@
     if (r.none) return `<b>${esc(r.title)}</b><div>${esc(r.none)}</div>`;
     const m = marketDem(r);
     const head = `<b>${esc(r.title)}</b>`;
-    const pending = r.noResults ? '<div class="tip-sum">Results not loaded yet</div>' : '';
+    const pending = r.noResults || r.pending ? '<div class="tip-sum">Results not loaded yet</div>' : '';
     if (!r.odds) return `${head}${pending}<div>No prediction market found</div>`;
     const lines = Object.entries(r.odds).map(([src, d]) => `<div>${esc(src)}: ${d.o.slice(0, 3).map((x) => `${esc(x.n || x.p || '?')}${x.p && x.n ? ` (${esc(x.p === 'Dem' ? 'D' : x.p === 'GOP' ? 'R' : x.p)})` : ''} ${Math.round(x.v * 100)}%`).join(', ')}</div>`).join('');
     const sum = m && !m.other ? `<div class="tip-sum">${BINS[binOf(m.d)].label} · Dem ${Math.round(m.d * 100)}% / GOP ${Math.round((1 - m.d) * 100)}% (avg.)</div>` : m && m.other ? '<div class="tip-sum">Non-major-party candidate favoured</div>' : '<div class="tip-sum">Markets list candidates without parties</div>';

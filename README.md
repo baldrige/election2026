@@ -34,7 +34,8 @@ Set `DASHBOARD_PASSWORD` to require a password (any username works).
 1. **Confirm market IDs** (`npm run find-markets -- senate`) and paste the slugs and tickers into `config.json`. Any that don't resolve show a yellow error on the dashboard, and the other markets keep working.
 2. **Verify `senateHoldovers`** in `config.json` (seats not up in 2026: 34 D incl. independents, 31 R) and the poll-closing times in `public/polls.js`.
 3. **Election morning:** run `npm run check-states`. Every polled state should load, with zero votes before polls close.
-4. Open "Results sources" in the Races panel. The civicAPI line should say about 72 races loaded within a couple of minutes of startup. Races civicAPI hasn't listed yet are searched again every 10 minutes.
+4. Every Senate and governor race on the ballot has a card. One with a dashed border has no results yet; open its **Why** to see what the state site and civicAPI reported (including what civicAPI's search returned). Send that text along if a race stays missing.
+5. Open "Results sources" in the Races panel. The civicAPI line should say about 72 races loaded within a couple of minutes of startup. Races civicAPI hasn't listed yet are searched again every 10 minutes.
 
 ## Design notes
 

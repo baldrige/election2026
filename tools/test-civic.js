@@ -88,6 +88,27 @@ const t = async (name, fn) => { await fn(); n++; console.log('  ok', name); };
     assert.strictEqual(calls.length, before + 1, 'resumes after the pause');
   });
 
+  await t('search accepts other wordings, skips primaries, and records what it saw when nothing matches', async () => {
+    const reply = (body) => ({ ok: true, status: 200, headers: new Map(), json: async () => body, text: async () => '' });
+    const listings = {
+      'Arkansas US Senate': [{ id: 1, province: 'AR', election_type: 'US Senate', election_name: 'Arkansas US Senate', election_scope: 'Primary', election_date: '2026-11-03T06:00:00Z' }],
+      'Arkansas Senate': [{ id: 2, province: 'AR', election_type: 'U.S. Senate', election_name: 'Arkansas U.S. Senate', election_scope: 'General', election_date: '2026-11-03T06:00:00Z' }],
+      'Mississippi US Senate': [], 'Mississippi Senate': [{ id: 9, province: 'MS', election_type: 'State Senate', election_name: 'Mississippi State Senate District 1', election_date: '2026-11-03' }], 'Mississippi': [],
+    };
+    const queries = [];
+    global.fetch = async (url) => { const q = new URL(url).searchParams.get('query'); queries.push(q); return reply({ races: listings[q] || [] }); };
+    const cfg = { electionDate: '2026-11-03', civicapi: { baseUrl: 'https://civicapi.org/api/v2', senateStates: ['AR', 'MS'], governorStates: [], house: false } };
+    const p = new C.CivicApiProvider(cfg);
+    await p.step(); // AR
+    assert.strictEqual(p.races[0].id, 2, 'primary skipped; "U.S. Senate" wording accepted');
+    await p.step(); // MS
+    assert.strictEqual(p.races[1].id, null);
+    assert.match(p.races[1].error, /found no Mississippi Senate general election .*Mississippi State Senate District 1 \[MS, State Senate, 2026-11-03\]/);
+    assert.deepStrictEqual(queries.slice(2), ['Mississippi US Senate', 'Mississippi Senate', 'Mississippi']);
+    assert.match(p.raceError('S', 'MS'), /found no Mississippi/);
+    assert.strictEqual(C.mismatch({ candidates: [], election_date: '2026-11-03', province: 'AR', election_type: 'United States Senate' }, { office: 'S', state: 'AR' }, '2026-11-03'), null);
+  });
+
   await t('Senate merge: official counts win while the feed works; civicAPI call carried over by party', () => {
     const state = { id: 'state:NC:S', state: 'NC', special: false, office: 'S', candidates: [{ name: 'Roy Cooper', party: 'Dem', votes: 10 }, { name: 'Michael Whatley', party: 'GOP', votes: 9 }], winnerParty: null, source: 'NC State Board of Elections' };
     const civ = { id: 'civic:S:NC', state: 'NC', special: false, office: 'S', candidates: [], winnerParty: 'Dem', source: 'civicAPI (civicapi.org)' };

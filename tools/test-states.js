@@ -88,13 +88,19 @@ t('MN ussenate.txt: 2024 real totals and 2026 staged file', () => {
   console.log('    ', show(r26));
 });
 
-t('AK precinct CSV (2026 primary file): names flipped, precincts counted, duplicates ignored', () => {
+t('AK precinct CSV: primary file rejected; general-sized file parsed, names flipped, duplicates ignored', () => {
   const text = fx('ak_enr_2026primary_subset.csv');
-  const [r] = S('ak').parse(text);
+  assert.throws(() => S('ak').parse(text), /still shows the primary \(16 Senate candidates\)/);
+  // Same real file cut down to four candidates, as a top-4 general election would have.
+  const lines = text.trim().split('\n');
+  const keep = new Set(lines.slice(1).map((l) => l.split(',')[12]).filter((v, i, a) => a.indexOf(v) === i).slice(0, 4));
+  const general = [lines[0], ...lines.slice(1).filter((l) => keep.has(l.split(',')[12]))].join('\n');
+  const [r] = S('ak').parse(general);
+  assert.strictEqual(r.candidates.length, 4);
   assert.ok(r.candidates.some((c) => c.name === 'Dustin Thomas House Darden'));
   assert.match(r.reportingLabel, /first-choice/);
-  const lines = text.trim().split('\n'); const [r2] = S('ak').parse([...lines, lines[1]].join('\n'));
-  assert.strictEqual(r2.candidates.reduce((s, c) => s + c.votes, 0), r.candidates.reduce((s, c) => s + c.votes, 0));
+  const gl = general.split('\n'); const [r2] = S('ak').parse([...gl, gl[1]].join('\n'));
+  assert.strictEqual(r2.candidates.reduce((a, c) => a + c.votes, 0), r.candidates.reduce((a, c) => a + c.votes, 0));
 });
 
 t('NH, ME, NE report why they are not polled instead of failing silently', () => {

@@ -14,6 +14,8 @@ const demo = require('./lib/demo');
 const cfg = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8'));
 const DEMO = process.env.DEMO === '1' || cfg.results.provider === 'demo';
 const PORT = Number(process.env.PORT) || cfg.port || 8080;
+// Treat placeholder values (e.g. "none" typed into a hosting dashboard) as "no AP key".
+if (/^(none|null|-|x|todo|tbd|placeholder)?$/i.test((process.env.AP_API_KEY || '').trim())) delete process.env.AP_API_KEY;
 // Optional password protection (HTTP Basic auth). Set DASHBOARD_PASSWORD on the host; any username works.
 const PASSWORD = process.env.DASHBOARD_PASSWORD || '';
 const crypto = require('crypto');

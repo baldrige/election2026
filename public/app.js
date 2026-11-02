@@ -16,47 +16,66 @@ function ago(ts) {
   return new Date(ts).toLocaleDateString('en-US', { ...ET, month: 'short', day: 'numeric' });
 }
 
-const ui = { feedsOpen: false };
+const ui = { feedsOpen: false, office: 'S', view: 'default', q: '' };
 let S = null; // last server state
 
-// ---------- Senate balance ----------
-// States don't call races, so this shows seats not on the ballot (solid) plus who LEADS the
-// count in each tracked race (light). Leading is not winning; the card says so.
+// ---------- balance of power ----------
+// Solid = seats not up (Senate) plus races called per civicAPI; light = leading the count, not called.
+function balance(office) {
+  const t = { called: { Dem: 0, GOP: 0, Oth: 0 }, lead: { Dem: 0, GOP: 0, Oth: 0 }, n: 0 };
+  const P = (p) => (p === 'Dem' || p === 'GOP' ? p : 'Oth');
+  for (const r of S.results.races) {
+    if (r.office !== office) continue;
+    t.n++;
+    if (r.winnerParty) { t.called[P(r.winnerParty)]++; continue; }
+    const [a, b] = r.candidates;
+    if (a && a.votes && !(b && a.votes === b.votes)) t.lead[P(a.party)]++;
+  }
+  return t;
+}
+function bopCard({ title, total, majority, base = { Dem: 0, GOP: 0 }, t, foot }) {
+  const d = base.Dem + t.called.Dem, r = base.GOP + t.called.GOP;
+  const rest = total - d - r - t.called.Oth - t.lead.Dem - t.lead.GOP - t.lead.Oth;
+  const pct = (n) => (100 * n) / total;
+  const seg = (n, color, cls, label) => n > 0 ? `<span class="${cls}" style="width:${pct(n)}%;background:${color}" title="${label}: ${n}"></span>` : '';
+  const plus = (n) => n ? ` <span class="plus">+${n} leading</span>` : '';
+  return `<div class="bop-card">
+    <h3>${title}</h3>
+    <div class="bop-nums">
+      <span class="d"><span class="sw" style="background:var(--dem)"></span><span class="lab">Dem</span> <b>${d}</b>${plus(t.lead.Dem)}</span>
+      <span class="d">${plus(t.lead.GOP)} <b>${r}</b> <span class="lab">GOP</span><span class="sw" style="background:var(--gop);margin:0 0 0 4px"></span></span>
+    </div>
+    <div class="bar" role="img" aria-label="${title}: Democrats ${d} plus ${t.lead.Dem} leading; Republicans ${r} plus ${t.lead.GOP} leading; other ${t.called.Oth} plus ${t.lead.Oth} leading; ${rest} no count">
+      ${seg(d, 'var(--dem)', '', 'Dem')}${seg(t.lead.Dem, 'var(--dem)', 'lead', 'Dem leading')}${seg(rest, 'var(--uncalled)', '', 'No count yet')}${seg(t.called.Oth, 'var(--oth)', '', 'Other')}${seg(t.lead.Oth, 'var(--oth)', 'lead', 'Other leading')}${seg(t.lead.GOP, 'var(--gop)', 'lead', 'GOP leading')}${seg(r, 'var(--gop)', '', 'GOP')}
+      ${majority ? `<i class="tick" style="left:${pct(majority) - 0.2}%"></i>` : ''}
+    </div>
+    <div class="bop-foot">${rest} no count yet${t.called.Oth + t.lead.Oth ? ` · other: ${t.called.Oth} called, ${t.lead.Oth} leading` : ''} · ${foot}</div>
+  </div>`;
+}
 function renderBop() {
   const h = S.config.senateHoldovers || { Dem: 0, GOP: 0 };
-  const lead = { Dem: 0, GOP: 0, Oth: 0 };
-  const tracked = S.results.races.filter((r) => r.office === 'S');
-  for (const r of tracked) {
-    const [a, b] = r.candidates;
-    if (!a || !a.votes || (b && a.votes === b.votes)) continue;
-    lead[a.party === 'Dem' || a.party === 'GOP' ? a.party : 'Oth']++;
-  }
-  const rest = 100 - h.Dem - h.GOP - lead.Dem - lead.GOP - lead.Oth;
-  const seg = (n, color, cls, label) => n > 0 ? `<span class="${cls}" style="width:${n}%;background:${color}" title="${label}: ${n}"></span>` : '';
-  const plus = (n) => n ? ` <span class="plus">+${n} leading</span>` : '';
-  $('bop').innerHTML = `<div class="bop-card">
-    <h3>Senate</h3>
-    <div class="bop-nums">
-      <span class="d"><span class="sw" style="background:var(--dem)"></span><span class="lab">Dem</span> <b>${h.Dem}</b>${plus(lead.Dem)}</span>
-      <span class="d">${plus(lead.GOP)} <b>${h.GOP}</b> <span class="lab">GOP</span><span class="sw" style="background:var(--gop);margin:0 0 0 4px"></span></span>
-    </div>
-    <div class="bar" role="img" aria-label="Senate: Democrats ${h.Dem} not up plus ${lead.Dem} leading; Republicans ${h.GOP} not up plus ${lead.GOP} leading; ${rest} other">
-      ${seg(h.Dem, 'var(--dem)', '', 'Dem, not up')}${seg(lead.Dem, 'var(--dem)', 'lead', 'Dem leading')}${seg(rest, 'var(--uncalled)', '', 'No count / not tracked')}${seg(lead.Oth, 'var(--oth)', 'lead', 'Other leading')}${seg(lead.GOP, 'var(--gop)', 'lead', 'GOP leading')}${seg(h.GOP, 'var(--gop)', '', 'GOP, not up')}
-      <i class="tick" style="left:${50 - 0.2}%"></i>
-    </div>
-    <div class="bop-key">
-      <span><i style="background:var(--ink-2)"></i>Seats not up in 2026</span>
-      <span><i style="background:var(--ink-2);opacity:.45"></i>Leading the count (not called)</span>
-      <span><i style="background:var(--uncalled)"></i>No count yet / not tracked: ${rest}</span>${lead.Oth ? `
-      <span><i style="background:var(--oth);opacity:.45"></i>Other candidate leading: ${lead.Oth}</span>` : ''}
-    </div>
-    <div class="bop-foot">${tracked.length} of 35 races on the ballot are tracked from state sites. Control: Dem needs 51; GOP needs 50 (VP tiebreak). Leads can change as votes are counted — follow the news panel for race calls.</div>
-  </div>`;
+  const sT = balance('S'), gT = balance('G'), hT = balance('H');
+  $('bop').innerHTML =
+    bopCard({ title: 'Senate', total: 100, majority: 50, base: h, t: sT, foot: `incl. ${h.Dem} D / ${h.GOP} R not up · ${sT.n} of 35 races tracked · Dem needs 51, GOP 50 (VP tiebreak)` })
+    + bopCard({ title: 'House', total: 435, majority: 218, t: hT, foot: `${hT.n} of 435 districts tracked · 218 for majority` })
+    + bopCard({ title: 'Governors', total: 36, t: gT, foot: `${gT.n} of 36 races tracked` })
+    + `<div class="bop-key"><span><i style="background:var(--ink-2)"></i>Called per civicAPI${h.Dem ? ' (Senate: + seats not up)' : ''}</span><span><i style="background:var(--ink-2);opacity:.45"></i>Leading the count, not called</span><span><i style="background:var(--uncalled)"></i>No count yet</span></div>`;
 }
 
 // ---------- races ----------
+function margin(r) { const [a, b] = r.candidates; return a && b ? a.pct - b.pct : 100; }
 function selectRaces() {
-  return S.results.races.filter((r) => r.office === 'S').sort((a, b) => a.state.localeCompare(b.state) || (a.special ? 1 : 0) - (b.special ? 1 : 0));
+  let list = S.results.races.filter((r) => r.office === ui.office);
+  const az = (a, b) => (a.district || a.state).localeCompare(b.district || b.state) || (a.special ? 1 : 0) - (b.special ? 1 : 0);
+  const view = ui.view === 'default' ? (ui.office === 'H' ? 'close' : 'all') : ui.view;
+  if (ui.q) {
+    const q = ui.q.toUpperCase().replace(/\s+/g, '');
+    list = list.filter((r) => (r.district || r.state).toUpperCase().replace('-', '').includes(q.replace('-', '')) || r.title.toUpperCase().includes(q));
+  }
+  if (view === 'close') list = list.filter((r) => !r.winnerParty && r.candidates[0] && r.candidates[0].votes).sort((a, b) => margin(a) - margin(b));
+  else if (view === 'called') list = list.filter((r) => r.winnerParty).sort(az);
+  else list = list.sort(az);
+  return list;
 }
 function raceCard(r) {
   const w = r.candidates.find((c) => c.winner);
@@ -71,7 +90,7 @@ function raceCard(r) {
     <div class="race-h"><b>${esc(r.district || r.state)}${r.special ? ' <span class="sub">special</span>' : ''}</b>
       <span class="rep">${w ? `<span class="called" style="background:${partyColor(w.party)}">${esc(partyLabel(w.party))} WIN</span> ` : r.runoff ? '<span class="sub">Runoff</span> ' : ''}${rep}</span></div>
     ${cands}
-    ${r.source ? `<div class="race-src">${r.sourceUrl ? `<a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener">${esc(r.source)}</a>` : esc(r.source)}${r.countsOnly ? ' · counts only, not called' : ''}${r.lastUpdated ? ` · ${ago(Date.parse(r.lastUpdated))}` : ''}</div>` : ''}
+    ${r.source ? `<div class="race-src">${r.sourceUrl ? `<a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener">${esc(r.source)}</a>` : esc(r.source)}${r.calledBy ? ` · called per ${esc(r.calledBy)}` : ' · not called'}${r.lastUpdated ? ` · ${ago(Date.parse(r.lastUpdated))}` : ''}</div>` : ''}
   </article>`;
 }
 function renderRaces() {
@@ -80,11 +99,12 @@ function renderRaces() {
   $('raceErr').textContent = err ? `Results: ${err}` : '';
   const feeds = S.results.feeds || [];
   $('feedStatus').hidden = !feeds.length;
-  $('feedStatus').innerHTML = feeds.length ? `<details${ui.feedsOpen ? ' open' : ''}><summary>State results feeds: ${feeds.filter((f) => f.ok).length} of ${feeds.filter((f) => !f.info).length} working${feeds.some((f) => f.info) ? ` · ${feeds.filter((f) => f.info).map((f) => f.state).join(', ')} have no state feed` : ''}</summary><ul>${
+  $('feedStatus').innerHTML = feeds.length ? `<details${ui.feedsOpen ? ' open' : ''}><summary>Results sources: ${feeds.filter((f) => f.ok).length} of ${feeds.filter((f) => !f.info).length} working${feeds.some((f) => f.info) ? ` · ${feeds.filter((f) => f.info).map((f) => f.state).join(', ')} have no state feed` : ''}</summary><ul>${
     feeds.map((f) => `<li><span class="dot ${f.ok ? 'ok' : f.info ? '' : 'bad'}">${esc(f.state)}</span> ${f.url ? `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.message)}</a>` : esc(f.message)}${f.stale ? ' (showing last good data)' : ''}${f.updated ? ` <span class="sub">· ${ago(f.updated)}</span>` : ''}</li>`).join('')}</ul></details>` : '';
-  const list = selectRaces();
-  $('raceList').innerHTML = list.length ? list.map(raceCard).join('')
-    : '<p class="empty">Waiting for state results…</p>';
+  const all = selectRaces(), list = all.slice(0, 90);
+  const total = S.results.races.filter((r) => r.office === ui.office).length;
+  $('raceList').innerHTML = list.length ? list.map(raceCard).join('') + (all.length > list.length ? `<p class="more">Showing ${list.length} of ${all.length}. Search a state or district to narrow.</p>` : '')
+    : `<p class="empty">${total ? (ui.view === 'close' || (ui.view === 'default' && ui.office === 'H') ? 'No uncalled races with votes yet. Choose "All" to see every race.' : 'No races match.') : 'Waiting for results…'}</p>`;
 }
 
 // ---------- markets ----------
@@ -121,7 +141,13 @@ function renderMarkets() {
   }).join('') : '<p class="empty">Waiting for market data…</p>';
 }
 
-// ---------- news / polls ----------
+// ---------- calls / news / polls ----------
+function renderCalls() {
+  $('callList').innerHTML = S.calls && S.calls.length ? S.calls.slice(0, 80).map((c) => `
+    <li><span class="when">${fmtTime(c.ts)}</span> <span class="called" style="background:${partyColor(c.party)}">${esc(partyLabel(c.party))}</span>
+      <b>${esc(c.title)}</b>${c.winner ? ` — ${esc(c.winner)}` : ''}${c.changed ? ' <span class="sub">(call changed)</span>' : ''}</li>`).join('')
+    : `<li class="empty">${S.results.civic ? 'No new calls since the dashboard started.' : 'Calls come from civicAPI, which is turned off.'}</li>`;
+}
 function renderNews() {
   const { items, errors } = S.news;
   $('newsErr').hidden = !errors.length;
@@ -152,10 +178,10 @@ function renderStatus() {
   $('status').innerHTML = dot('Results', S.results.updated, S.results.error) + dot('Markets', S.markets.updated, S.markets.errors.length)
     + dot('News', S.news.updated, S.news.errors.length);
   $('demoBadge').hidden = !S.demo;
-  $('credit').textContent = `Results: ${S.results.provider || '—'}${S.results.updated ? ` · updated ${fmtTime(S.results.updated)} ET` : ''} · Markets: Kalshi, Polymarket, PredictIt · Headlines link to their publishers${(S.results.feeds || []).length ? ' · State-site figures are unofficial election-night counts' : ''}`;
+  $('credit').innerHTML = `Results: ${esc(S.results.provider || '—')}${S.results.updated ? ` · updated ${fmtTime(S.results.updated)} ET` : ''}${S.results.civic ? ' · Governor, House and some Senate data and all race calls: <a href="https://civicapi.org" target="_blank" rel="noopener">civicAPI (civicapi.org)</a>' : ''} · State-site figures are unofficial election-night counts · Markets: Kalshi, Polymarket, PredictIt · Headlines link to their publishers`;
 }
 
-function renderAll() { renderBop(); renderRaces(); renderMarkets(); renderNews(); renderPolls(); renderStatus(); }
+function renderAll() { renderBop(); renderRaces(); renderMarkets(); renderCalls(); renderNews(); renderPolls(); renderStatus(); }
 
 async function refresh() {
   try {
@@ -169,6 +195,14 @@ async function refresh() {
 
 function tick() { $('clock').textContent = new Date().toLocaleTimeString('en-US', { ...ET, hour: 'numeric', minute: '2-digit', second: '2-digit' }) + ' ET'; if (S) renderPolls(); }
 
+$('officeTabs').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  ui.office = b.dataset.office;
+  [...$('officeTabs').children].forEach((x) => x.classList.toggle('on', x === b));
+  if (S) renderRaces();
+});
+$('viewSel').addEventListener('change', (e) => { ui.view = e.target.value; if (S) renderRaces(); });
+$('search').addEventListener('input', (e) => { ui.q = e.target.value.trim(); if (S) renderRaces(); });
 $('feedStatus').addEventListener('toggle', (e) => { ui.feedsOpen = e.target.open; }, true);
 
 tick(); setInterval(tick, 1000);

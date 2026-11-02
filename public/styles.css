@@ -29,10 +29,10 @@ h2 { font-size: 13px; margin: 0; text-transform: uppercase; letter-spacing: .6px
 .dot.ok::before { background: #2e9d5b; } .dot.bad::before { background: #d08a00; }
 
 main { display: grid; gap: 14px; padding: 14px 16px; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  grid-template-areas: "bop bop" "races markets" "news polls"; max-width: 1500px; margin: 0 auto; }
-.bop { grid-area: bop; } .races { grid-area: races; } .markets { grid-area: markets; align-self: start; }
+  grid-template-areas: "bop bop" "races markets" "races calls" "news polls"; max-width: 1500px; margin: 0 auto; }
+.bop { grid-area: bop; } .races { grid-area: races; } .markets { grid-area: markets; align-self: start; } .calls { grid-area: calls; align-self: start; }
 .news { grid-area: news; } .polls { grid-area: polls; }
-@media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); grid-template-areas: "bop" "races" "markets" "news" "polls"; } }
+@media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); grid-template-areas: "bop" "races" "markets" "calls" "news" "polls"; } }
 
 .panel, .bop-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; min-width: 0; }
 .panel-head { display: flex; flex-wrap: wrap; gap: 8px 12px; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -41,7 +41,8 @@ main { display: grid; gap: 14px; padding: 14px 16px; grid-template-columns: minm
 .err { background: var(--warn-bg); color: var(--warn-ink); border-radius: 6px; padding: 8px 10px; font-size: 12px; margin-bottom: 10px; white-space: pre-line; }
 
 /* balance of power */
-.bop { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.bop { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 1100px) { .bop { grid-template-columns: minmax(0, 1fr); } }
 .bop-card h3 { margin: 0 0 2px; font-size: 15px; }
 .bop-nums { display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: space-between; align-items: baseline; margin: 6px 0; font-variant-numeric: tabular-nums; }
 .bop-nums b { font-size: 26px; }
@@ -53,7 +54,7 @@ main { display: grid; gap: 14px; padding: 14px 16px; grid-template-columns: minm
 .bar .tick { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink); left: 50%; }
 .bop-foot { margin-top: 6px; font-size: 12px; color: var(--ink-3); }
 .bar .lead { opacity: .45; }
-.bop-key { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; font-size: 12px; color: var(--ink-2); }
+.bop-key { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; font-size: 12px; color: var(--ink-2); }
 .bop-key i { display: inline-block; width: 18px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
 .bop-nums .plus { font-size: 13px; color: var(--ink-2); font-weight: 600; }
 
@@ -93,9 +94,9 @@ select, input[type=search] { font: inherit; color: var(--ink); background: var(-
 
 /* lists */
 ol { list-style: none; margin: 0; padding: 0; }
-.news-list li { padding: 8px 0; border-top: 1px solid var(--line); }
-.news-list li:first-child { border-top: 0; }
-.news-list .when { color: var(--ink-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+.call-list li, .news-list li { padding: 8px 0; border-top: 1px solid var(--line); }
+.call-list li:first-child, .news-list li:first-child { border-top: 0; }
+.call-list .when, .news-list .when { color: var(--ink-3); font-size: 12px; font-variant-numeric: tabular-nums; }
 .news-list { max-height: 560px; overflow: auto; }
 .news-list a { text-decoration: none; font-weight: 600; }
 .news-list a:hover { text-decoration: underline; }
@@ -110,3 +111,5 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; padding: 4px 
 .feeds summary { cursor: pointer; }
 .feeds ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }
 .feeds li { overflow-wrap: anywhere; }
+.call-list { max-height: 340px; overflow: auto; }
+.more { color: var(--ink-3); font-size: 12px; text-align: center; padding-top: 8px; }

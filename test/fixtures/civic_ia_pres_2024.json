@@ -1,0 +1,257 @@
+{
+ "election_name": "Iowa US President",
+ "election_type": "President",
+ "election_scope": "General",
+ "election_date": "2024-11-05T05:00:00.000Z",
+ "country": "US",
+ "province": "IA",
+ "district": null,
+ "municipality": null,
+ "polls_open": "2024-11-05T12:00:00.000Z",
+ "polls_close": "2024-11-06T01:00:00.000Z",
+ "is_disputed": false,
+ "has_map": true,
+ "registered_voters": null,
+ "percent_reporting": 100,
+ "test_data": false,
+ "last_updated": "2026-01-14T03:21:02.106Z",
+ "round": 1,
+ "candidates": [
+  {
+   "name": "Donald J. Trump",
+   "candidate_id": 49452,
+   "party": "Republican",
+   "incumbent": false,
+   "major_candidate": true,
+   "winner": true,
+   "color": "#c6606b",
+   "votes": 927019,
+   "percent": 55.74,
+   "electoral_votes": 6
+  },
+  {
+   "name": "Kamala Harris",
+   "candidate_id": 49453,
+   "party": "Democratic",
+   "incumbent": false,
+   "major_candidate": true,
+   "winner": false,
+   "color": "#4874a3",
+   "votes": 707278,
+   "percent": 42.53
+  },
+  {
+   "name": "Robert F. Kennedy, Jr.",
+   "candidate_id": 49454,
+   "party": "We The People",
+   "incumbent": false,
+   "major_candidate": false,
+   "winner": false,
+   "color": "#808080",
+   "votes": 13122,
+   "percent": 0.79
+  },
+  {
+   "name": "Chase Oliver",
+   "candidate_id": 49455,
+   "party": "Libertarian",
+   "incumbent": false,
+   "major_candidate": false,
+   "winner": false,
+   "color": "#d4c029",
+   "votes": 7218,
+   "percent": 0.43
+  },
+  {
+   "name": "Write-in",
+   "candidate_id": 825183,
+   "party": "Nonpartisan",
+   "incumbent": false,
+   "major_candidate": false,
+   "winner": false,
+   "color": "#9A36FF",
+   "votes": 6657,
+   "percent": 0.4
+  },
+  {
+   "name": "Claudia De la Cruz",
+   "candidate_id": 49457,
+   "party": "Socialism and Liberation",
+   "incumbent": false,
+   "major_candidate": false,
+   "winner": false,
+   "color": "#808080",
+   "votes": 1427,
+   "percent": 0.09
+  },
+  {
+   "name": "Shiva Ayyadurai",
+   "candidate_id": 49458,
+   "party": "Independent",
+   "incumbent": false,
+   "major_candidate": false,
+   "winner": false,
+   "color": "#63c660",
+   "votes": 424,
+   "percent": 0.03
+  }
+ ],
+ "region_results": {
+  "adair": {
+   "name": "Adair",
+   "type": "County",
+   "fill": "#c6606b",
+   "percent_reporting": 100,
+   "candidates": [
+    {
+     "name": "Donald J. Trump",
+     "party": "Republican",
+     "incumbent": false,
+     "major_candidate": true,
+     "winner": false,
+     "color": "#c6606b",
+     "votes": 2916,
+     "percent": 71.47
+    },
+    {
+     "name": "Kamala Harris",
+     "party": "Democratic",
+     "incumbent": false,
+     "major_candidate": true,
+     "winner": false,
+     "color": "#4874a3",
+     "votes": 1086,
+     "percent": 26.62
+    },
+    {
+     "name": "Robert F. Kennedy, Jr.",
+     "party": "We The People",
+     "incumbent": false,
+     "major_candidate": false,
+     "winner": false,
+     "color": "#808080",
+     "votes": 34,
+     "percent": 0.83
+    },
+    {
+     "name": "Chase Oliver",
+     "party": "Libertarian",
+     "incumbent": false,
+     "major_candidate": false,
+     "winner": false,
+     "color": "#d4c029",
+     "votes": 20,
+     "percent": 0.49
+    },
+    {
+     "name": "Write-in",
+     "party": "Nonpartisan",
+     "incumbent": false,
+     "major_candidate": false,
+     "winner": false,
+     "color": "#9A36FF",
+     "votes": 16,
+     "percent": 0.39
+    },
+    {
+     "name": "Shiva Ayyadurai",
+     "party": "Independent",
+     "incumbent": false,
+     "major_candidate": false,
+     "winner": false,
+     "color": "#63c660",
+     "votes": 5,
+     "percent": 0.12
+    },
+    {
+     "name": "William Stodden",
+     "party": "Socialist",
+     "incumbent": false,
+     "major_candidate": false,
+     "winner": false,
+     "color": "#808080",
+     "votes": 2,
+     "percent": 0.05
+    },
+    {
+     "name": "Claudia De la Cruz",
+     "party": "Socialism and Liberation",
+     "incumbent": false,
+     "major_candidate": false,
+     "winner": false,
+     "color": "#808080",
+     "votes": 1,
+     "percent": 0.02
+    }
+   ]
+  },
+  "adams": {
+   "name": "Adams",
+   "type": "County",
+   "fill": "#c6606b",
+   "percent_reporting": 100,
+   "candidates": [
+    {
+     "name": "Donald J. Trump",
+     "party": "Republican",
+     "incumbent": false,
+     "major_candidate": true,
+     "winner": false,
+     "color": "#c6606b",
+     "votes": 1517,
+     "percent": 71.05
+    },
+    {
+     "name": "Kamala Harris",
+     "party": "Democratic",
+     "incumbent": false,
+     "major_candidate": true,
+     "winner": false,
+     "color": "#4874a3",
+     "votes": 576,
+     "percent": 26.98
+    },
+    {
+     "name": "Robert F. Kennedy, Jr.",
+     "party": "We The People",
+     "incumbent": false,
+     "major_candidate": false,
+     "winner": false,
+     "color": "#808080",
+     "votes": 28,
+     "percent": 1.31
+    },
+    {
+     "name": "Chase Oliver",
+     "party": "Libertarian",
+     "incumbent": false,
+     "major_candidate": false,
+     "winner": false,
+     "color": "#d4c029",
+     "votes": 9,
+     "percent": 0.42
+    },
+    {
+     "name": "Write-in",
+     "party": "Nonpartisan",
+     "incumbent": false,
+     "major_candidate": false,
+     "winner": false,
+     "color": "#9A36FF",
+     "votes": 4,
+     "percent": 0.19
+    },
+    {
+     "name": "Shiva Ayyadurai",
+     "party": "Independent",
+     "incumbent": false,
+     "major_candidate": false,
+     "winner": false,
+     "color": "#63c660",
+     "votes": 1,
+     "percent": 0.05
+    }
+   ]
+  }
+ }
+}

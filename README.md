@@ -1,18 +1,20 @@
 # Election Night Desk
 
-A single-screen dashboard for U.S. election night (Nov 3, 2026), focused on the Senate. It shows:
+A single-screen dashboard for U.S. election night (Nov 3, 2026): Senate, House and governors. It shows:
 
 | Panel | Source | Refresh |
 |---|---|---|
-| Senate balance | Seats not up in 2026, plus who **leads the count** in each tracked race (not called) | 30 s |
-| Senate vote counts for the watch-list states | **Official state election websites**. Unofficial counts; states don't call races | 30–60 s per state |
+| Balance of power: Senate, House, Governors | Races **called per civicAPI** (solid; plus Senate seats not up) and races where a party **leads the count** (light) | 30 s |
+| Senate vote counts in 9 states | **Official state election websites** (NC, GA, MI, OH, TX, IA, AK, MN, FL). Unofficial counts | 30–60 s per state |
+| All other Senate races, all 36 governor races, all 435 House races | **[civicAPI (civicapi.org)](https://civicapi.org)**, free and keyless | about 1 request/s, spread across races |
+| Race calls (✓ and the calls log) | civicAPI's winner flags, labelled "called per civicAPI" | with the above |
 | Prediction markets | **Kalshi**, **Polymarket**, **PredictIt** public price APIs | 60 s |
 | Headlines, including race calls by news organizations | RSS from NPR, NYT, Washington Post, Politico, PBS, CBS, ABC, Fox, BBC, The Hill | 2 min |
 | Poll-closing timeline and countdown | Static schedule in `public/polls.js` | live |
 
 Everything is free; no API keys. Zero dependencies; you only need **Node 18 or newer**.
 
-**What it doesn't do:** call races, or cover House and governor races. For calls, watch the news panel. Outlets report AP and Decision Desk calls within minutes.
+**About civicAPI.** It's a small independent project, not a news organization or election office. Its numbers and calls are labelled on every card, and official state counts take precedence where we have them. One pre-election sample listed the SC Republican Senate nominee as "Darline Graham", so expect occasional data errors and check important calls against the news panel. Its licence requires attribution: the page credits "civicAPI (civicapi.org)" with a link. Keep that if you change the layout. To hide its calls, set `civicapi.useWinnerFlags` to `false`; to turn it off entirely, set `civicapi.enabled` to `false`.
 
 ## Run it
 
@@ -30,13 +32,16 @@ Set `DASHBOARD_PASSWORD` to require a password (any username works).
 1. **Confirm market IDs** (`npm run find-markets -- senate`) and paste the slugs and tickers into `config.json`. Any that don't resolve show a yellow error on the dashboard, and the other markets keep working.
 2. **Verify `senateHoldovers`** in `config.json` (seats not up in 2026: 34 D incl. independents, 31 R) and the poll-closing times in `public/polls.js`.
 3. **Election morning:** run `npm run check-states`. Every polled state should load, with zero votes before polls close.
+4. Open "Results sources" in the Races panel. The civicAPI line should say about 72 races loaded within a couple of minutes of startup. Races civicAPI hasn't listed yet are searched again every 10 minutes.
 
 ## Design notes
 
 * Your browser only talks to the local server. The server polls every source on a timer and caches the results, so opening the page on several screens doesn't multiply requests, and CORS isn't an issue.
 * Sources fail independently. A broken state feed, RSS feed or market shows an error line in its own panel, keeps its last good data, and nothing else breaks. Header dots show each source's freshness.
 * Market sparklines and "since start" deltas come from history the server records while it runs. Start it early in the day.
-* Market prices are probabilities implied by trading, not results. "Leading" in the Senate bar is a count lead, not a projection.
+* Market prices are probabilities implied by trading, not results. "Leading" in the balance bars is a count lead, not a projection.
+* Senate merge rule: a state's official count is shown while its feed works. If civicAPI has called that race, the call is added to the official card (matched by party). If a state feed fails, civicAPI's numbers replace it until the feed recovers.
+* civicAPI polling is polite: about one request per second, with the House (one request covering all 435 districts) in every fourth slot. Unchanged races are cheap (ETag), and a rate limit pauses all civicAPI requests for at least 2 minutes or as long as it asks. Calls that already existed when the server started aren't logged as new.
 * Headlines link out to the publishers. Only the titles are shown.
 
 ## State results: details

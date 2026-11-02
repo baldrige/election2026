@@ -6,6 +6,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { StateFeedsProvider } = require('./lib/statefeeds');
+const { CivicApiProvider } = require('./lib/civicapi');
+const { mergeSenate } = require('./lib/merge');
 const markets = require('./lib/markets');
 const news = require('./lib/news');
 const demo = require('./lib/demo');
@@ -27,20 +29,50 @@ function authorized(req) {
 
 const state = {
   results: { races: [], provider: null, updated: null, error: null, feeds: [] },
+  calls: [], // race-call log (civicAPI winner flags), newest first
   markets: { markets: [], errors: [], updated: null, history: {} },
   news: { items: [], errors: [], updated: null },
 };
 
 // ---------- results ----------
-// Vote counts from official state election websites (no race calls). Demo mode uses synthetic data.
+// Senate: official state websites first (counts), civicAPI where a state has no working feed.
+// Governor and House: civicAPI. Calls come only from civicAPI's winner flags and are labelled as such.
 const provider = DEMO ? new demo.DemoProvider(cfg) : new StateFeedsProvider(cfg);
+const civic = !DEMO && cfg.civicapi && cfg.civicapi.enabled ? new CivicApiProvider(cfg) : null;
+if (civic) civic.start();
+
+const calledSeen = new Map();
+const startedAt = Date.now();
+const WARMUP_MS = 150 * 1000; // first full civicAPI cycle; calls seen then already existed, so they aren't logged as new
+function logCalls(races) {
+  for (const r of races) {
+    if (!r.winnerParty || calledSeen.get(r.id) === r.winnerParty) continue;
+    const changed = calledSeen.has(r.id);
+    calledSeen.set(r.id, r.winnerParty);
+    if (Date.now() - startedAt < WARMUP_MS) continue;
+    const w = r.candidates.find((c) => c.winner);
+    state.calls.unshift({ ts: Date.now(), id: r.id, title: r.title, office: r.office, winner: w ? w.name : '',
+      party: r.winnerParty, changed, by: r.calledBy || '' });
+  }
+  state.calls = state.calls.slice(0, 300);
+}
+
 async function pollResults() {
   try {
-    const races = await provider.fetch();
+    const stRaces = await provider.fetch();
+    let races = stRaces;
+    const feeds = DEMO ? [] : provider.feedStatus();
+    if (civic) {
+      const ok = new Set(feeds.filter((f) => f.ok).map((f) => f.state));
+      const cr = civic.results();
+      races = [...mergeSenate(stRaces, cr.filter((r) => r.office === 'S'), (st) => ok.has(st)), ...cr.filter((r) => r.office !== 'S')];
+      const cs = civic.status();
+      feeds.push({ state: 'civicAPI', ok: cs.ok, message: cs.message + (cs.errorCount ? ` · ${cs.errorCount} not available yet (e.g. ${cs.errors.join('; ')})` : ''), url: 'https://civicapi.org', updated: cs.ok ? Date.now() : null });
+    }
+    logCalls(races);
     Object.assign(state.results, {
-      races, provider: DEMO ? 'DEMO DATA (not real)' : 'official state election websites',
-      updated: races.length ? Date.now() : state.results.updated, error: null,
-      feeds: DEMO ? [] : provider.feedStatus(),
+      races, provider: DEMO ? 'DEMO DATA (not real)' : civic ? 'official state election websites + civicAPI' : 'official state election websites',
+      updated: races.length ? Date.now() : state.results.updated, error: null, feeds, civic: !!civic,
     });
   } catch (e) {
     state.results.error = e.message;
@@ -107,6 +139,7 @@ const server = http.createServer((req, res) => {
         senateHoldovers: cfg.results.senateHoldovers,
       },
       results: state.results,
+      calls: state.calls,
       markets: state.markets,
       news: state.news,
     });

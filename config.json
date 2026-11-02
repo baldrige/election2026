@@ -240,13 +240,9 @@
       },
       {
         "name": "Washington Post",
-        "url": "https://feeds.washingtonpost.com/rss/politics",
-        "_fallbacksNote": "Used only while the main feed fails, in order. Google News was removed: it serves an automated-traffic block page (503) to Render's servers. Check with: npm run check-news -- \"Washington Post\"",
+        "url": "https://www.washingtonpost.com/arcio/rss/category/politics/",
+        "_fallbacksNote": "feeds.washingtonpost.com/rss/politics returned 502 to Render on 2026-11-02, so the Post's site-hosted politics feed is the main URL. Bing News is used only if it fails. (Google News blocks Render's servers with a 503.) Check with: npm run check-news -- \"Washington Post\"",
         "fallbacks": [
-          {
-            "name": "washingtonpost.com feed",
-            "url": "https://www.washingtonpost.com/arcio/rss/category/politics/"
-          },
           {
             "name": "Bing News",
             "url": "https://www.bing.com/news/search?q=site%3Awashingtonpost.com+(election+OR+senate+OR+house+OR+governor+OR+politics)&format=rss&qft=sortbydate%3d%221%22",

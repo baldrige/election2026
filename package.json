@@ -9,6 +9,7 @@
     "demo": "DEMO=1 node server.js",
     "test": "node tools/selftest.js && node tools/test-states.js && node tools/test-civic.js && node tools/test-odds.js && node tools/test-aia.js",
     "check-states": "node tools/check-states.js",
-    "find-markets": "node tools/find-markets.js"
+    "find-markets": "node tools/find-markets.js",
+    "check-news": "node tools/check-news.js"
   }
 }

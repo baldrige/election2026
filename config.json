@@ -240,7 +240,10 @@
       },
       {
         "name": "Washington Post",
-        "url": "https://feeds.washingtonpost.com/rss/politics"
+        "url": "https://feeds.washingtonpost.com/rss/politics",
+        "fallbackUrl": "https://news.google.com/rss/search?q=site:washingtonpost.com+(election+OR+politics+OR+senate+OR+house+OR+governor)+when:2d&hl=en-US&gl=US&ceid=US:en",
+        "fallbackName": "Google News",
+        "fallbackTitleSuffix": "The Washington Post"
       },
       {
         "name": "Politico",
@@ -270,6 +273,7 @@
         "name": "The Hill",
         "url": "https://thehill.com/homenews/campaign/feed/"
       }
-    ]
+    ],
+    "_fallbackNote": "A feed may set fallbackUrl (used only while its own feed fails). Google News search RSS restricted to the publisher's site works for most outlets."
   }
 }

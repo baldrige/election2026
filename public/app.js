@@ -213,7 +213,7 @@ function renderNews() {
   $('newsErr').textContent = errors.length ? `Some feeds failed:\n${errors.join('\n')}` : '';
   $('newsSub').textContent = items.length ? `${new Set(items.map((i) => i.source)).size} sources` : '';
   $('newsList').innerHTML = items.length ? items.map((i) => `
-    <li><span class="src">${esc(i.source)}</span><span class="when">${ago(i.ts)}</span>${i.ts && Date.now() - i.ts < 15 * 60000 ? '<span class="fresh">NEW</span>' : ''}<br>
+    <li><span class="src">${esc(i.source)}</span>${i.via ? `<span class="sub" title="The publisher's own feed is failing; this headline came from ${esc(i.via)}">via ${esc(i.via)} · </span>` : ''}<span class="when">${ago(i.ts)}</span>${i.ts && Date.now() - i.ts < 15 * 60000 ? '<span class="fresh">NEW</span>' : ''}<br>
       <a href="${esc(i.link)}" target="_blank" rel="noopener">${esc(i.title)}</a></li>`).join('')
     : '<li class="empty">Waiting for headlines…</li>';
 }

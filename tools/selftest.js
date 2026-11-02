@@ -73,7 +73,7 @@ global.fetch = async (url) => {
   const { groupMarkets, partyOf } = require('../lib/markets');
   assert.strictEqual(partyOf('Democratic Party'), 'Dem'); assert.strictEqual(partyOf('GOP'), 'GOP');
   assert.strictEqual(partyOf('D House, R Senate'), null, 'combo outcomes are not a party');
-  const mk = (key, source, title, outcomes) => ({ key, source, title, url: '#', volume: 1, outcomes });
+  const mk = (key, source, title, outcomes, year = 2026) => ({ key, source, title, url: '#', volume: 1, outcomes, year });
   const groups = require('../config.json').markets.groups;
   const grouped = groupMarkets([
     mk('k', 'Kalshi', 'Which party will win the House?', [{ label: 'Democrats', prob: 0.62 }, { label: 'Republicans', prob: 0.4 }]),
@@ -81,8 +81,13 @@ global.fetch = async (url) => {
     mk('pi', 'PredictIt', 'Which party will control the Senate after 2026?', [{ label: 'Republican', prob: 0.6 }, { label: 'Democratic', prob: 0.41 }]),
     mk('ga', 'Kalshi', 'Georgia Senate race', [{ label: 'Democrats', prob: 0.55 }, { label: 'Republicans', prob: 0.45 }]),
     mk('bop', 'Polymarket', 'Balance of power: House and Senate', [{ label: 'D House, R Senate', prob: 0.5 }]),
+    mk('k28', 'Kalshi', 'Which party will win the House?', [{ label: 'Democrats', prob: 0.5 }, { label: 'Republicans', prob: 0.5 }], 2028),
   ], groups);
-  const house = grouped.groups.find((x) => x.key === 'house'), senate = grouped.groups.find((x) => x.key === 'senate');
+  const house = grouped.groups.find((x) => x.key === 'house:2026'), senate = grouped.groups.find((x) => x.key === 'senate:2026');
+  const house28 = grouped.groups.find((x) => x.key === 'house:2028');
+  assert.deepStrictEqual(house28.rows.map((r) => r.key), ['k28'], '2028 markets get their own widget');
+  assert.strictEqual(house.label, 'House control · 2026');
+  assert.deepStrictEqual(grouped.groups.map((x) => x.key), ['senate:2026', 'house:2026', 'house:2028'], '2026 first');
   assert.deepStrictEqual(house.rows.map((r) => r.source), ['Kalshi', 'Polymarket']);
   assert.ok(Math.abs(house.rows[0].dem - 0.62 / 1.02) < 1e-9, 'two-party prices are renormalised');
   assert.ok(Math.abs(house.rows[1].gop - 0.42) < 1e-9, 'missing side is the complement');

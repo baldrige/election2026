@@ -1,0 +1,88 @@
+{
+ "id": "57672",
+ "title": "Texas Senate Election Winner",
+ "slug": "texas-senate-election-winner",
+ "endDate": null,
+ "markets": [
+  {
+   "id": "630963",
+   "groupItemTitle": "James Talarico (D)",
+   "outcomePrices": "[\"0.675\", \"0.325\"]",
+   "outcomes": "[\"Yes\", \"No\"]",
+   "question": "Will the Democrats win the Texas Senate race in 2026?"
+  },
+  {
+   "id": "630964",
+   "groupItemTitle": "Ken Paxton (R)",
+   "outcomePrices": "[\"0.325\", \"0.675\"]",
+   "outcomes": "[\"Yes\", \"No\"]",
+   "question": "Will the Republicans win the Texas Senate race in 2026?"
+  },
+  {
+   "id": "630965",
+   "groupItemTitle": "Person A",
+   "outcomes": "[\"Yes\", \"No\"]",
+   "question": "Will Person A win the Texas Senate race in 2026?"
+  },
+  {
+   "id": "630966",
+   "groupItemTitle": "Person B",
+   "outcomes": "[\"Yes\", \"No\"]",
+   "question": "Will Person B win the Texas Senate race in 2026?"
+  },
+  {
+   "id": "630967",
+   "groupItemTitle": "Person C",
+   "outcomes": "[\"Yes\", \"No\"]",
+   "question": "Will Person C win the Texas Senate race in 2026?"
+  },
+  {
+   "id": "630968",
+   "groupItemTitle": "Person D",
+   "outcomes": "[\"Yes\", \"No\"]",
+   "question": "Will Person D win the Texas Senate race in 2026?"
+  },
+  {
+   "id": "630969",
+   "groupItemTitle": "Person E",
+   "outcomes": "[\"Yes\", \"No\"]",
+   "question": "Will Person E win the Texas Senate race in 2026?"
+  },
+  {
+   "id": "630970",
+   "groupItemTitle": "Person F",
+   "outcomes": "[\"Yes\", \"No\"]",
+   "question": "Will Person F win the Texas Senate race in 2026?"
+  },
+  {
+   "id": "630971",
+   "groupItemTitle": "Person G",
+   "outcomes": "[\"Yes\", \"No\"]",
+   "question": "Will Person G win the Texas Senate race in 2026?"
+  },
+  {
+   "id": "630972",
+   "groupItemTitle": "Person H",
+   "outcomes": "[\"Yes\", \"No\"]",
+   "question": "Will Person H win the Texas Senate race in 2026?"
+  },
+  {
+   "id": "630973",
+   "groupItemTitle": "Person I",
+   "outcomes": "[\"Yes\", \"No\"]",
+   "question": "Will Person I win the Texas Senate race in 2026?"
+  },
+  {
+   "id": "630974",
+   "groupItemTitle": "Person J",
+   "outcomes": "[\"Yes\", \"No\"]",
+   "question": "Will Person J win the Texas Senate race in 2026?"
+  },
+  {
+   "id": "630975",
+   "groupItemTitle": "Other",
+   "outcomes": "[\"Yes\", \"No\"]",
+   "question": "Will a candidate not listed above win the Texas Senate race in 2026?"
+  }
+ ]
+}

@@ -122,3 +122,9 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; padding: 4px 
 .feeds li { overflow-wrap: anywhere; }
 .call-list { max-height: 340px; overflow: auto; }
 .more { color: var(--ink-3); font-size: 12px; text-align: center; padding-top: 8px; }
+.race-odds { margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--line); display: grid; gap: 3px; font-size: 12px; font-variant-numeric: tabular-nums; }
+.odds-row { display: grid; grid-template-columns: 74px 1fr 1fr; gap: 6px; align-items: center; color: var(--ink-2); }
+.odds-row a { color: var(--ink-3); text-decoration: none; } .odds-row a:hover { text-decoration: underline; }
+.odds-row b { color: var(--ink); font-weight: 600; }
+.odds-row .sw { width: 8px; height: 8px; margin-right: 4px; }
+.odds-row span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

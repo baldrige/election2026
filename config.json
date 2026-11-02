@@ -207,6 +207,20 @@
     "predictit": {
       "baseUrl": "https://www.predictit.org/api/marketdata",
       "marketIds": []
+    },
+    "raceMarkets": {
+      "_note": "Odds shown on each race card. Polymarket: one paged sweep of the tag below. Kalshi: race tickers like SENATETX-26, fetched 10 per request through the shared Kalshi throttle. Set kalshiHouse to \"none\" to skip House races on Kalshi if you hit rate limits.",
+      "polymarket": true,
+      "polymarketTag": "midterms",
+      "polymarketEverySeconds": 180,
+      "kalshi": true,
+      "kalshiHouse": "all",
+      "kalshiEverySeconds": 240,
+      "kalshiMinGapMs": 2000,
+      "kalshiYear": "26",
+      "kalshiGovOverrides": {
+        "AK": "KXGOVAK"
+      }
     }
   },
   "news": {

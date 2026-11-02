@@ -77,6 +77,19 @@ function selectRaces() {
   else list = list.sort(az);
   return list;
 }
+// Market odds under the tally: one line per platform, top two outcomes.
+function oddsBlock(r) {
+  if (!r.odds) return '';
+  const lab = (x) => x.p && (x.p === 'Dem' || x.p === 'GOP') ? partyLabel(x.p) : x.n ? x.n.split(' ').slice(-1)[0] : partyLabel(x.p);
+  const rows = Object.entries(r.odds).map(([src, d]) => {
+    // Keep D left / R right when both parties are listed, so columns line up across rows and cards.
+    const two = d.o.slice(0, 2), rank = { Dem: 0, GOP: 1 };
+    if (two.every((x) => x.p in rank)) two.sort((a, b) => rank[a.p] - rank[b.p]);
+    const top = two.map((x) => `<span title="${esc(x.n || partyLabel(x.p))}${x.p && x.n ? ` (${esc(partyLabel(x.p))})` : ''}"><i class="sw" style="background:${x.p ? partyColor(x.p) : 'var(--ink-3)'}"></i>${esc(lab(x))} <b>${Math.round(x.v * 100)}%</b></span>`).join('');
+    return `<div class="odds-row"><a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(src)}</a>${top}</div>`;
+  }).join('');
+  return `<div class="race-odds" title="Prediction-market prices: traders' bets, not results">${rows}</div>`;
+}
 function raceCard(r) {
   const w = r.candidates.find((c) => c.winner);
   const rep = r.reportingLabel || (r.eevp != null ? `${Math.round(r.eevp)}% in` : 'no votes yet');
@@ -90,6 +103,7 @@ function raceCard(r) {
     <div class="race-h"><b>${esc(r.district || r.state)}${r.special ? ' <span class="sub">special</span>' : ''}</b>
       <span class="rep">${w ? `<span class="called" style="background:${partyColor(w.party)}">${esc(partyLabel(w.party))} WIN</span> ` : r.runoff ? '<span class="sub">Runoff</span> ' : ''}${rep}</span></div>
     ${cands}
+    ${oddsBlock(r)}
     ${r.source ? `<div class="race-src">${r.sourceUrl ? `<a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener">${esc(r.source)}</a>` : esc(r.source)}${r.calledBy ? ` · called per ${esc(r.calledBy)}` : ' · not called'}${r.lastUpdated ? ` · ${ago(Date.parse(r.lastUpdated))}` : ''}</div>` : ''}
   </article>`;
 }

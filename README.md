@@ -8,7 +8,8 @@ A single-screen dashboard for U.S. election night (Nov 3, 2026): Senate, House a
 | Senate vote counts in 9 states | **Official state election websites** (NC, GA, MI, OH, TX, IA, AK, MN, FL). Unofficial counts | 30–60 s per state |
 | All other Senate races, all 36 governor races, all 435 House races | **[civicAPI (civicapi.org)](https://civicapi.org)**, free and keyless | about 1 request/s, spread across races |
 | Race calls (✓ and the calls log) | civicAPI's winner flags, labelled "called per civicAPI" | with the above |
-| Prediction markets: one widget per question (Senate control, House control), averaging Kalshi, Polymarket and PredictIt, with a row per platform | **Kalshi**, **Polymarket**, **PredictIt** public price APIs | 60 s |
+| Prediction markets: one widget per question **and election year** (Senate control · 2026, House control · 2028, …), averaging Kalshi, Polymarket and PredictIt, with a row per platform | **Kalshi**, **Polymarket**, **PredictIt** public price APIs | 60 s |
+| Market odds on each race card (below the tally) | Kalshi race markets (`SENATETX-26`, `GOVPARTYTX-26`, `HOUSECA22-26`) and Polymarket's "midterms" tag | Polymarket ~3 min, Kalshi ~4 min |
 | Headlines, including race calls by news organizations | RSS from NPR, NYT, Washington Post, Politico, PBS, CBS, ABC, Fox, BBC, The Hill | 2 min |
 | Poll-closing timeline and countdown | Static schedule in `public/polls.js` | live |
 
@@ -40,6 +41,8 @@ Set `DASHBOARD_PASSWORD` to require a password (any username works).
 * Sources fail independently. A broken state feed, RSS feed or market shows an error line in its own panel, keeps its last good data, and nothing else breaks. Header dots show each source's freshness.
 * Market sparklines and "since start" deltas come from history the server records while it runs. Start it early in the day.
 * Markets are grouped by `markets.groups` in `config.json`: a market joins a widget when its title matches and its outcomes are the two parties. Prices are renormalised over Dem + GOP, and the headline figure is the simple average across platforms. Single-state races and combined outcomes ("D House, R Senate") keep their own cards.
+* A market's election year comes from its title, ticker or slug, or failing that its close date (control markets close in the following odd year). Each year gets its own widget, so 2026 and 2028 never mix.
+* Race-card odds: Polymarket is one paged sweep of its "midterms" tag. Kalshi race events are fetched 10 per request. If Kalshi won't batch, it falls back to one request per race for Senate and governor only, and skips the House. Every Kalshi request goes through one shared throttle (2 s apart; chamber-control requests go first), and a 429 pauses all Kalshi traffic for at least 2 minutes. If Kalshi keeps rate-limiting, set `markets.raceMarkets.kalshiHouse` to `"none"` or `kalshi` to `false`.
 * Market prices are probabilities implied by trading, not results. "Leading" in the balance bars is a count lead, not a projection.
 * Senate merge rule: a state's official count is shown while its feed works. If civicAPI has called that race, the call is added to the official card (matched by party). If a state feed fails, civicAPI's numbers replace it until the feed recovers.
 * civicAPI polling is polite: about one request per second, with the House (one request covering all 435 districts) in every fourth slot. Unchanged races are cheap (ETag), and a rate limit pauses all civicAPI requests for at least 2 minutes or as long as it asks. Calls that already existed when the server started aren't logged as new.

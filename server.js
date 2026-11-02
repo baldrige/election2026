@@ -8,6 +8,7 @@ const path = require('path');
 const { StateFeedsProvider } = require('./lib/statefeeds');
 const { CivicApiProvider } = require('./lib/civicapi');
 const { mergeSenate } = require('./lib/merge');
+const { RaceOddsProvider } = require('./lib/raceodds');
 const markets = require('./lib/markets');
 const news = require('./lib/news');
 const demo = require('./lib/demo');
@@ -40,6 +41,8 @@ const state = {
 const provider = DEMO ? new demo.DemoProvider(cfg) : new StateFeedsProvider(cfg);
 const civic = !DEMO && cfg.civicapi && cfg.civicapi.enabled ? new CivicApiProvider(cfg) : null;
 if (civic) civic.start();
+const raceOdds = !DEMO && cfg.markets.raceMarkets ? new RaceOddsProvider(cfg) : null;
+if (raceOdds) raceOdds.start();
 
 const calledSeen = new Map();
 const startedAt = Date.now();
@@ -70,6 +73,10 @@ async function pollResults() {
       feeds.push({ state: 'civicAPI', ok: cs.ok, message: cs.message + (cs.errorCount ? ` · ${cs.errorCount} not available yet (e.g. ${cs.errors.join('; ')})` : ''), url: 'https://civicapi.org', updated: cs.ok ? Date.now() : null });
     }
     logCalls(races);
+    if (raceOdds) {
+      raceOdds.setRaces(races);
+      feeds.push({ state: 'Race odds', ok: true, info: false, message: `Kalshi: ${raceOdds.status.Kalshi} · Polymarket: ${raceOdds.status.Polymarket}`, url: null });
+    }
     Object.assign(state.results, {
       races, provider: DEMO ? 'DEMO DATA (not real)' : civic ? 'official state election websites + civicAPI' : 'official state election websites',
       updated: races.length ? Date.now() : state.results.updated, error: null, feeds, civic: !!civic,
@@ -147,7 +154,10 @@ const server = http.createServer((req, res) => {
         electionDate: cfg.electionDate,
         senateHoldovers: cfg.results.senateHoldovers,
       },
-      results: state.results,
+      results: { ...state.results, races: state.results.races.map((r) => {
+        const odds = DEMO ? demo.demoRaceOdds(r) : raceOdds ? raceOdds.forRace(r) : null;
+        return odds ? { ...r, odds } : r;
+      }) },
       calls: state.calls,
       markets: state.markets,
       news: state.news,

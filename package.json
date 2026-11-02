@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "demo": "DEMO=1 node server.js",
-    "test": "node tools/selftest.js && node tools/test-states.js && node tools/test-civic.js",
+    "test": "node tools/selftest.js && node tools/test-states.js && node tools/test-civic.js && node tools/test-odds.js",
     "check-states": "node tools/check-states.js",
     "find-markets": "node tools/find-markets.js"
   }

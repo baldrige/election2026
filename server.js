@@ -6,6 +6,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { ApProvider } = require('./lib/results');
+const { StateFeedsProvider } = require('./lib/statefeeds');
 const markets = require('./lib/markets');
 const news = require('./lib/news');
 const demo = require('./lib/demo');
@@ -26,35 +27,49 @@ function authorized(req) {
 }
 
 const state = {
-  results: { races: [], provider: null, updated: null, error: null },
+  results: { races: [], provider: null, updated: null, error: null, feeds: [] },
   calls: [],                // race-call log, newest first
   markets: { markets: [], errors: [], updated: null, history: {} },
   news: { items: [], errors: [], updated: null },
 };
 
 // ---------- results ----------
-const provider = DEMO ? new demo.DemoProvider() : new ApProvider(cfg);
+// AP (licensed, includes race calls) when a key is set; free official state feeds fill in
+// any watch-list state AP isn't covering. Demo mode uses synthetic data only.
+const ap = DEMO ? new demo.DemoProvider() : process.env.AP_API_KEY ? new ApProvider(cfg) : null;
+const stateFeeds = DEMO ? null : new StateFeedsProvider(cfg);
 const calledSeen = new Map();
 async function pollResults() {
-  try {
-    const races = await provider.fetch();
-    for (const r of races) {
-      if (r.winnerParty && calledSeen.get(r.id) !== r.winnerParty) {
-        const first = !calledSeen.has(r.id);
-        calledSeen.set(r.id, r.winnerParty);
-        if (state.results.updated || DEMO) {  // don't flood the log with calls that existed at startup
-          const w = r.candidates.find((c) => c.winner);
-          state.calls.unshift({ ts: Date.now(), id: r.id, title: r.title, office: r.office,
-            winner: w ? w.name : '', party: r.winnerParty, changed: !first });
-        }
+  const errors = [];
+  let apRaces = [], stRaces = [];
+  if (ap) {
+    try { apRaces = (await ap.fetch()).map((r) => ({ source: DEMO ? 'Demo' : 'AP', ...r })); }
+    catch (e) { errors.push(`AP: ${e.message}`); console.error('[results:ap]', e.message); }
+  }
+  if (stateFeeds) {
+    try { stRaces = await stateFeeds.fetch(); } catch (e) { errors.push(`State feeds: ${e.message}`); }
+  }
+  const apKeys = new Set(apRaces.filter((r) => r.office === 'S').map((r) => `${r.state}:${!!r.special}`));
+  const races = [...apRaces, ...stRaces.filter((r) => !apKeys.has(`${r.state}:${!!r.special}`))];
+
+  for (const r of races) {
+    if (r.winnerParty && calledSeen.get(r.id) !== r.winnerParty) {
+      const first = !calledSeen.has(r.id);
+      calledSeen.set(r.id, r.winnerParty);
+      if (state.results.updated || DEMO) {  // don't flood the log with calls that existed at startup
+        const w = r.candidates.find((c) => c.winner);
+        state.calls.unshift({ ts: Date.now(), id: r.id, title: r.title, office: r.office,
+          winner: w ? w.name : '', party: r.winnerParty, changed: !first });
       }
     }
-    state.calls = state.calls.slice(0, 200);
-    Object.assign(state.results, { races, provider: provider.name, updated: Date.now(), error: null });
-  } catch (e) {
-    state.results.error = e.message;
-    console.error('[results]', e.message);
   }
+  state.calls = state.calls.slice(0, 200);
+  const provider = DEMO ? 'DEMO DATA (not real)' : [ap && 'Associated Press', stRaces.length && 'official state election sites'].filter(Boolean).join(' + ') || 'none';
+  Object.assign(state.results, {
+    races, provider, updated: races.length ? Date.now() : state.results.updated,
+    error: errors.join('\n') || null,
+    apEnabled: !!ap, feeds: stateFeeds ? stateFeeds.feedStatus() : [],
+  });
 }
 
 // ---------- markets ----------
@@ -133,5 +148,5 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, () => {
   console.log(`Election dashboard on http://localhost:${PORT}${DEMO ? '  (DEMO DATA — not real results)' : ''}`);
   if (!PASSWORD) console.log('  ! DASHBOARD_PASSWORD not set: anyone who can reach this port can view it.');
-  if (!DEMO && !process.env.AP_API_KEY) console.log('  ! AP_API_KEY not set: vote tallies disabled; markets and news still work.');
+  if (!DEMO && !process.env.AP_API_KEY) console.log('  ! AP_API_KEY not set: using free official state feeds only (counts, no race calls).');
 });

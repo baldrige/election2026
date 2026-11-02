@@ -103,3 +103,8 @@ ol { list-style: none; margin: 0; padding: 0; }
 .poll-list li:first-child { border-top: 0; }
 .poll-list li.past { color: var(--ink-3); } .poll-list li.next { font-weight: 700; }
 footer { text-align: center; color: var(--ink-3); font-size: 12px; padding: 4px 16px 24px; }
+.race-src { margin-top: 8px; font-size: 11px; color: var(--ink-3); }
+.feeds { font-size: 12px; margin-bottom: 10px; color: var(--ink-2); }
+.feeds summary { cursor: pointer; }
+.feeds ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }
+.feeds li { overflow-wrap: anywhere; }

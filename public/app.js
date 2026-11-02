@@ -54,9 +54,9 @@ function renderBop() {
   const s = tally(races, 'S'), hs = tally(races, 'H'), g = tally(races, 'G');
   const html = [];
   if (s.total) {
-    const total = s.total + h.Dem + h.GOP;
-    html.push(bopCard('Senate', s.Dem + h.Dem, s.GOP + h.GOP, s.Oth, s.open, total, total / 2,
-      `Includes ${h.Dem} D / ${h.GOP} R seats not up. Control: Dem needs 51; GOP needs 50 (VP tiebreak). Independents shown as other.`));
+    const total = 100, d = s.Dem + h.Dem, r = s.GOP + h.GOP, open = total - d - r - s.Oth;
+    html.push(bopCard('Senate', d, r, s.Oth, open, total, 50,
+      `Includes ${h.Dem} D / ${h.GOP} R seats not up. Control: Dem needs 51; GOP needs 50 (VP tiebreak). Independents shown as other.${S.results.apEnabled ? '' : ' State sites don\'t call races, so without AP this bar only shows seats not on the ballot.'}`));
   }
   if (hs.total) html.push(bopCard('House', hs.Dem, hs.GOP, hs.Oth, hs.open, hs.total, 218, `${hs.total} seats tracked · 218 for majority`));
   if (g.total) html.push(bopCard('Governors', g.Dem, g.GOP, g.Oth, g.open, g.total, 0, `${g.total} races on the ballot (seats not up aren't counted)`));
@@ -83,7 +83,7 @@ function selectRaces() {
 }
 function raceCard(r) {
   const w = r.candidates.find((c) => c.winner);
-  const rep = r.eevp != null ? `${Math.round(r.eevp)}% in` : 'no votes yet';
+  const rep = r.reportingLabel || (r.eevp != null ? `${Math.round(r.eevp)}% in` : 'no votes yet');
   const cands = r.candidates.slice(0, 3).map((c) => `
     <div class="cand">
       <span class="nm">${c.winner ? '<span class="check" aria-label="winner">✓</span> ' : ''}${esc(c.name)} <span class="sub">(${esc(partyLabel(c.party))})</span></span>
@@ -94,12 +94,17 @@ function raceCard(r) {
     <div class="race-h"><b>${esc(r.district || r.state)}${r.special ? ' <span class="sub">special</span>' : ''}</b>
       <span class="rep">${w ? `<span class="called" style="background:${partyColor(w.party)}">${esc(partyLabel(w.party))} WIN</span> ` : r.runoff ? '<span class="sub">Runoff</span> ' : ''}${rep}</span></div>
     ${cands}
+    ${r.source ? `<div class="race-src">${r.sourceUrl ? `<a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener">${esc(r.source)}</a>` : esc(r.source)}${r.countsOnly ? ' · counts only, not called' : ''}${r.lastUpdated ? ` · ${ago(Date.parse(r.lastUpdated))}` : ''}</div>` : ''}
   </article>`;
 }
 function renderRaces() {
   const err = S.results.error;
   $('raceErr').hidden = !err;
   $('raceErr').textContent = err ? `Results: ${err}` : '';
+  const feeds = S.results.feeds || [];
+  $('feedStatus').hidden = !feeds.length || ui.office !== 'S';
+  $('feedStatus').innerHTML = feeds.length ? `<details><summary>State results feeds: ${feeds.filter((f) => f.ok).length} of ${feeds.length} working</summary><ul>${
+    feeds.map((f) => `<li><span class="dot ${f.ok ? 'ok' : 'bad'}">${esc(f.state)}</span> ${f.url ? `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.message)}</a>` : esc(f.message)}${f.stale ? ' (showing last good data)' : ''}${f.updated ? ` <span class="sub">· ${ago(f.updated)}</span>` : ''}</li>`).join('')}</ul></details>` : '';
   const list = selectRaces();
   $('raceList').innerHTML = list.length ? list.map(raceCard).join('')
     : `<p class="empty">${S.results.races.length ? 'No races match.' : 'Waiting for results…'}</p>`;
@@ -176,7 +181,7 @@ function renderStatus() {
   $('status').innerHTML = dot('Results', S.results.updated, S.results.error) + dot('Markets', S.markets.updated, S.markets.errors.length)
     + dot('News', S.news.updated, S.news.errors.length);
   $('demoBadge').hidden = !S.demo;
-  $('credit').textContent = `Results: ${S.results.provider || '—'}${S.results.updated ? ` · updated ${fmtTime(S.results.updated)} ET` : ''} · Markets: Kalshi, Polymarket, PredictIt · Headlines link to their publishers`;
+  $('credit').textContent = `Results: ${S.results.provider || '—'}${S.results.updated ? ` · updated ${fmtTime(S.results.updated)} ET` : ''} · Markets: Kalshi, Polymarket, PredictIt · Headlines link to their publishers${(S.results.feeds || []).length ? ' · State-site figures are unofficial election-night counts' : ''}`;
 }
 
 function renderAll() { renderBop(); renderRaces(); renderMarkets(); renderCalls(); renderNews(); renderPolls(); renderStatus(); }

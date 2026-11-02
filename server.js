@@ -30,7 +30,7 @@ function authorized(req) {
 const state = {
   results: { races: [], provider: null, updated: null, error: null, feeds: [] },
   calls: [], // race-call log (civicAPI winner flags), newest first
-  markets: { markets: [], errors: [], updated: null, history: {} },
+  markets: { groups: [], markets: [], errors: [], updated: null, history: {} },
   news: { items: [], errors: [], updated: null },
 };
 
@@ -85,17 +85,26 @@ async function pollMarkets() {
   try {
     const { markets: list, errors } = DEMO ? demo.demoMarkets() : await markets.fetchAll(cfg.markets);
     const now = Date.now();
-    for (const m of list) {
-      const top = m.outcomes[0];
-      if (!top) continue;
-      const h = (state.markets.history[m.key] ||= []);
-      // Track the probability of a stable label (first one we saw) so the sparkline doesn't flip.
-      const label = h.label || (h.label = top.label);
-      const o = m.outcomes.find((x) => x.label === label);
-      if (o) h.push([now, o.prob]);
+    const { groups, others } = markets.groupMarkets(list, cfg.markets.groups);
+    const push = (key, label, p) => {
+      const h = (state.markets.history[key] ||= []);
+      h.label ||= label;
+      if (h.label === label && p != null) h.push([now, p]);
       if (h.length > 720) h.splice(0, h.length - 720);
+    };
+    // Grouped (two-party) markets: track the Democratic probability, per platform and averaged.
+    for (const g of groups) {
+      push(`group:${g.key}`, 'Dem', g.dem);
+      for (const r of g.rows) if (!r.stale) push(r.key, 'Dem', r.dem);
     }
-    Object.assign(state.markets, { markets: list, errors, updated: now });
+    // Other markets: track the first outcome label we saw so the line doesn't flip between outcomes.
+    for (const m of others) {
+      const h = state.markets.history[m.key];
+      const label = (h && h.label) || (m.outcomes[0] || {}).label;
+      const o = m.outcomes.find((x) => x.label === label);
+      if (o && !m.stale) push(m.key, label, o.prob);
+    }
+    Object.assign(state.markets, { groups, markets: others, errors, updated: now });
   } catch (e) {
     state.markets.errors = [e.message];
   }

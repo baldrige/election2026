@@ -176,6 +176,19 @@
   "markets": {
     "pollSeconds": 60,
     "_note": "IDs/slugs for 2026 markets. Run `node tools/find-markets.js senate` to discover current ones. Bad entries show up as errors on the dashboard.",
+    "_groupsNote": "Markets whose title matches one of these and whose outcomes are the two parties are combined into one widget (averaged across platforms). Single-state races stay as their own cards.",
+    "groups": [
+      {
+        "key": "senate",
+        "label": "Senate control",
+        "match": "senate"
+      },
+      {
+        "key": "house",
+        "label": "House control",
+        "match": "\\bhouse\\b"
+      }
+    ],
     "kalshi": {
       "baseUrl": "https://api.elections.kalshi.com/trade-api/v2",
       "seriesTickers": [

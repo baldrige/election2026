@@ -117,28 +117,53 @@ function spark(hist) {
   const d = hist.map((p, i) => `${i ? 'L' : 'M'}${((p[0] - x0) / (x1 - x0 || 1) * (W - 4) + 2).toFixed(1)},${(H - 2 - (p[1] - lo) / (hi - lo) * (H - 4)).toFixed(1)}`).join('');
   return `<svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="trend"><path d="${d}"/></svg>`;
 }
+const pct0 = (p) => `${Math.round(p * 100)}%`;
+function deltaText(h, short = false) {
+  const d = h && h.length > 1 ? (h[h.length - 1][1] - h[0][1]) * 100 : 0;
+  if (Math.abs(d) < 0.5) return short ? '—' : 'unchanged since start';
+  return `${d > 0 ? '▲' : '▼'} ${Math.abs(d).toFixed(1)}${short ? '' : ' pts Dem since start'}`;
+}
+// One widget per question (e.g. "House control"): average across platforms + a row per platform.
+function groupWidget(g, history) {
+  const h = history[`group:${g.key}`] || [];
+  const vol = g.rows.some((r) => r.volume);
+  const rows = g.rows.map((r) => `<tr>
+      <td><a href="${esc(r.url)}" target="_blank" rel="noopener" title="${esc(r.title)}">${esc(r.source)}</a>${r.stale ? ` <span class="sub">as of ${fmtTime(r.asOf)}</span>` : ''}</td>
+      <td class="num">${pct0(r.dem)}</td><td class="num">${pct0(r.gop)}</td>
+      <td class="num sub">${deltaText(history[r.key], true)}</td>
+      ${vol ? `<td class="num sub">${r.volume ? fmtNum(Math.round(r.volume)) : ''}</td>` : ''}</tr>`).join('');
+  return `<div class="mkt">
+    <div class="mkt-t">${esc(g.label)}</div>
+    <div class="mkt-split">
+      <span><span class="sw" style="background:var(--dem)"></span>Dem <b>${pct0(g.dem)}</b></span>
+      <span><b>${pct0(g.gop)}</b> GOP<span class="sw" style="background:var(--gop);margin:0 0 0 4px"></span></span>
+    </div>
+    <div class="bar" role="img" aria-label="${esc(g.label)}: Democrats ${pct0(g.dem)}, Republicans ${pct0(g.gop)}">
+      <span style="width:${g.dem * 100}%;background:var(--dem)"></span><span style="width:${g.gop * 100}%;background:var(--gop)"></span><i class="tick"></i>
+    </div>
+    <div class="mkt-row"><div class="delta">${g.rows.length > 1 ? `Average of ${g.rows.length} markets` : '1 market'} · ${deltaText(h)}</div>${spark(h)}</div>
+    <table class="mkt-tbl"><thead><tr><th>Market</th><th class="num">Dem</th><th class="num">GOP</th><th class="num" title="Change in Democratic probability since the dashboard started">Δ Dem</th>${vol ? '<th class="num">Volume</th>' : ''}</tr></thead><tbody>${rows}</tbody></table>
+  </div>`;
+}
+function otherCard(m, history) {
+  const h = history[m.key] || [];
+  const label = h.label || (m.outcomes[0] || {}).label;
+  const o = m.outcomes.find((x) => x.label === label) || m.outcomes[0];
+  if (!o) return '';
+  const others = m.outcomes.filter((x) => x !== o).slice(0, 3).map((x) => `${esc(x.label)} ${pct0(x.prob)}`).join(' · ');
+  return `<div class="mkt">
+    <div class="mkt-h"><span>${esc(m.source)}${m.stale ? ` · <b>as of ${fmtTime(m.asOf)}</b>` : ''}</span>${m.volume ? `<span>Vol ${fmtNum(Math.round(m.volume))}</span>` : ''}</div>
+    <div class="mkt-t"><a href="${esc(m.url)}" target="_blank" rel="noopener">${esc(m.title)}</a></div>
+    <div class="mkt-row"><div><span class="p">${pct0(o.prob)}</span> ${esc(o.label)}<div class="delta">${deltaText(h).replace(' Dem', '')}</div></div>${spark(h)}</div>
+    ${others ? `<div class="mkt-others">${others}</div>` : ''}
+  </div>`;
+}
 function renderMarkets() {
-  const { markets, errors, history } = S.markets;
+  const { groups = [], markets, errors, history } = S.markets;
   $('mktErr').hidden = !errors.length;
   $('mktErr').textContent = errors.join('\n');
-  $('mktList').innerHTML = markets.length ? markets.map((m) => {
-    const h = history[m.key] || [];
-    const label = h.label || (m.outcomes[0] || {}).label;
-    const o = m.outcomes.find((x) => x.label === label) || m.outcomes[0];
-    if (!o) return '';
-    const delta = h.length > 1 ? (h[h.length - 1][1] - h[0][1]) * 100 : 0;
-    const others = m.outcomes.filter((x) => x !== o).slice(0, 3).map((x) => `${esc(x.label)} ${(x.prob * 100).toFixed(0)}%`).join(' · ');
-    return `<div class="mkt">
-      <div class="mkt-h"><span>${esc(m.source)}${m.stale ? ` · <b>as of ${fmtTime(m.asOf)}</b>` : ''}</span>${m.volume ? `<span>Vol ${fmtNum(Math.round(m.volume))}</span>` : ''}</div>
-      <div class="mkt-t"><a href="${esc(m.url)}" target="_blank" rel="noopener">${esc(m.title)}</a></div>
-      <div class="mkt-row">
-        <div><span class="p">${(o.prob * 100).toFixed(0)}%</span> ${esc(o.label)}
-          <div class="delta">${Math.abs(delta) >= 0.5 ? `${delta > 0 ? '▲' : '▼'} ${Math.abs(delta).toFixed(1)} pts` : 'unchanged'} since start</div></div>
-        ${spark(h)}
-      </div>
-      ${others ? `<div class="mkt-others">${others}</div>` : ''}
-    </div>`;
-  }).join('') : '<p class="empty">Waiting for market data…</p>';
+  const html = groups.map((g) => groupWidget(g, history)).join('') + markets.map((m) => otherCard(m, history)).join('');
+  $('mktList').innerHTML = html || '<p class="empty">Waiting for market data…</p>';
 }
 
 // ---------- calls / news / polls ----------

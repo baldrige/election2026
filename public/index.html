@@ -16,8 +16,11 @@
     <span id="clock" class="clock"></span>
     <span id="nextClose" class="next"></span>
     <span id="status" class="status"></span>
+    <button id="bellBtn" class="bell" aria-haspopup="dialog">🔔 Alerts</button>
   </div>
+  <div id="alertPanel" class="alert-panel" role="dialog" aria-label="Alert settings" hidden></div>
 </header>
+<div id="toasts" class="toasts" aria-live="polite"></div>
 
 <main>
   <section class="bop" id="bop" aria-label="Balance of power"></section>
@@ -34,6 +37,7 @@
         <select id="viewSel" aria-label="Which races">
           <option value="default">Default view</option>
           <option value="close">Closest uncalled</option>
+          <option value="starred">Starred</option>
           <option value="called">Called</option>
           <option value="all">All, A–Z</option>
         </select>
@@ -75,6 +79,7 @@
   <span id="credit"></span>
 </footer>
 <script src="polls.js"></script>
+<script src="alerts.js"></script>
 <script src="map.js"></script>
 <script src="app.js"></script>
 </body>

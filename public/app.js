@@ -74,8 +74,10 @@ function selectRaces() {
   }
   if (view === 'close') list = list.filter((r) => !r.winnerParty && r.candidates[0] && r.candidates[0].votes).sort((a, b) => margin(a) - margin(b));
   else if (view === 'called') list = list.filter((r) => r.winnerParty).sort(az);
+  else if (view === 'starred') list = list.filter((r) => window.Stars.has(r)).sort(az);
   else list = list.sort(az);
-  return list;
+  // Starred races pin to the top of every view (sort is stable, so the view's order holds within each group).
+  return list.sort((a, b) => (window.Stars.has(b) ? 1 : 0) - (window.Stars.has(a) ? 1 : 0));
 }
 // Market odds under the tally: one line per platform, top two outcomes.
 function oddsBlock(r) {
@@ -92,9 +94,10 @@ function oddsBlock(r) {
   }).join('');
   return `<div class="race-odds" title="Prediction-market prices: traders' bets, not results">${rows}</div>`;
 }
+const starBtn = (r) => { const k = window.Stars.keyOf(r), on = window.Stars.has(k); return `<button class="star${on ? ' on' : ''}" data-star="${esc(k)}" aria-pressed="${on}" title="${on ? 'Unstar' : 'Star'} this race (pins it to the top and enables lead-change and odds alerts)">${on ? '★' : '☆'}</button>`; };
 function pendingCard(r) {
-  return `<article class="race pending">
-    <div class="race-h"><b>${esc(r.state)}${r.special ? ' <span class="sub">special</span>' : ''}</b><span class="rep">No results yet</span></div>
+  return `<article class="race pending${window.Stars.has(r) ? ' starred' : ''}">
+    <div class="race-h"><b>${starBtn(r)}${esc(r.state)}${r.special ? ' <span class="sub">special</span>' : ''}</b><span class="rep">No results yet</span></div>
     <p class="pend-msg">No results source has this race yet.</p>
     ${oddsBlock(r)}
     ${r.pendingWhy && r.pendingWhy.length ? `<details class="pend-why"><summary>Why</summary>${r.pendingWhy.map((w) => `<div>${esc(w)}</div>`).join('')}</details>` : ''}
@@ -114,8 +117,8 @@ function raceCard(r) {
       <span class="pc">${c.pct.toFixed(1)}%</span>
       <span class="vt"><span class="track"><span class="fill" style="width:${c.pct}%;background:${partyColor(c.party)}"></span></span><span class="votes">${fmtNum(c.votes)}</span></span>
     </div>`).join('');
-  return `<article class="race">
-    <div class="race-h"><b>${esc(r.district || r.state)}${r.special ? ' <span class="sub">special</span>' : ''}</b>
+  return `<article class="race${window.Stars.has(r) ? ' starred' : ''}">
+    <div class="race-h"><b>${starBtn(r)}${esc(r.district || r.state)}${r.special ? ' <span class="sub">special</span>' : ''}</b>
       <span class="rep">${w ? `<span class="called" style="background:${partyColor(w.party)}">${esc(partyLabel(w.party))} WIN</span> ` : r.runoff ? '<span class="sub">Runoff</span> ' : ''}${rep}</span></div>
     ${cands}
     ${oddsBlock(r)}
@@ -138,7 +141,7 @@ function renderRaces() {
   const all = selectRaces(), list = all.slice(0, 90);
   const total = S.results.races.filter((r) => r.office === ui.office).length;
   $('raceList').innerHTML = list.length ? list.map(raceCard).join('') + (all.length > list.length ? `<p class="more">Showing ${list.length} of ${all.length}. Search a state or district to narrow.</p>` : '')
-    : `<p class="empty">${total ? (ui.view === 'close' || (ui.view === 'default' && ui.office === 'H') ? 'No uncalled races with votes yet. Choose "All" to see every race.' : 'No races match.') : 'Waiting for results…'}</p>`;
+    : `<p class="empty">${total ? (ui.view === 'close' || (ui.view === 'default' && ui.office === 'H') ? 'No uncalled races with votes yet. Choose "All" to see every race.' : ui.view === 'starred' ? 'No starred races on this tab. Use ☆ on a card to star one.' : 'No races match.') : 'Waiting for results…'}</p>`;
 }
 
 // ---------- markets ----------
@@ -242,10 +245,21 @@ function renderStatus() {
 
 // Each panel renders on its own, so a bug in one can't blank the others.
 function renderAll() {
-  for (const fn of [renderBop, renderRaces, renderMarkets, renderCalls, renderNews, renderPolls, renderStatus]) {
-    try { fn(); } catch (e) { console.error(`${fn.name} failed:`, e); }
+  for (const fn of [renderBop, renderRaces, renderMarkets, renderCalls, renderNews, renderPolls, renderStatus, () => window.checkAlerts(S)]) {
+    try { fn(); } catch (e) { console.error(`${fn.name || 'alerts'} failed:`, e); }
   }
 }
+
+// Open the tab for a race key ("S:NC", "H:AZ-01") and filter the cards to it (used by alerts).
+window.jumpToRace = (key) => {
+  const [office, place] = key.split(':');
+  if (!office || !place) return;
+  ui.office = office; ui.q = place; ui.view = 'default';
+  $('search').value = place; $('viewSel').value = 'default';
+  [...$('officeTabs').children].forEach((x) => x.classList.toggle('on', x.dataset.office === office));
+  renderRaces();
+  document.querySelector('.races').scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
 
 async function refresh() {
   try {
@@ -266,6 +280,11 @@ $('officeTabs').addEventListener('click', (e) => {
   ui.office = b.dataset.office;
   [...$('officeTabs').children].forEach((x) => x.classList.toggle('on', x === b));
   if (S) renderRaces();
+});
+$('raceList').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-star]'); if (!b) return;
+  window.Stars.toggle(b.dataset.star);
+  renderRaces();
 });
 $('viewSel').addEventListener('change', (e) => { ui.view = e.target.value; if (S) renderRaces(); });
 $('search').addEventListener('input', (e) => { ui.q = e.target.value.trim(); if (S) renderRaces(); });

@@ -159,3 +159,31 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; padding: 4px 
 .pend-why { margin-top: 6px; font-size: 11px; color: var(--ink-3); overflow-wrap: anywhere; }
 .pend-why summary { cursor: pointer; color: var(--ink-2); }
 .pend-why div { margin-top: 3px; }
+
+/* stars */
+.star { border: 0; background: none; padding: 0 4px 0 0; font-size: 15px; line-height: 1; cursor: pointer; color: var(--ink-3); vertical-align: -1px; }
+.star.on { color: #d49b00; }
+.star:hover { color: var(--ink); }
+.race.starred { box-shadow: inset 3px 0 0 #d49b00; }
+
+/* alerts */
+.bell { font: inherit; font-size: 12px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; cursor: pointer; }
+.bell .badge { display: inline-block; min-width: 16px; padding: 0 4px; border-radius: 8px; background: var(--demo); color: #fff; font-size: 11px; text-align: center; }
+.alert-panel { position: absolute; right: 16px; top: 100%; margin-top: 6px; width: min(380px, calc(100vw - 32px)); max-height: 75vh; overflow: auto; z-index: 20;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; box-shadow: 0 6px 24px rgba(0,0,0,.18); font-size: 13px; display: grid; gap: 8px; }
+.alert-panel[hidden] { display: none; }
+.alert-panel label { display: grid; gap: 4px; }
+.alert-panel label.chk { display: block; }
+.alert-panel input[type=number] { width: 52px; font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 2px 4px; }
+.alert-panel small { color: var(--ink-3); }
+.ap-h, .ap-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.ap-close, .ap-row button { font: inherit; background: none; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); cursor: pointer; padding: 2px 8px; }
+.ap-log { border-top: 1px solid var(--line); padding-top: 6px; display: grid; gap: 6px; }
+.ap-item { cursor: pointer; } .ap-item:hover { text-decoration: underline; }
+.ap-item .when { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.toasts { position: fixed; right: 16px; bottom: 16px; z-index: 30; display: grid; gap: 8px; width: min(340px, calc(100vw - 32px)); }
+.toast { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-left: 4px solid var(--ink-2); border-radius: 8px; padding: 10px 28px 10px 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.2); font-size: 13px; position: relative; cursor: pointer; }
+.toast.call { border-left-color: #d49b00; } .toast.lead { border-left-color: var(--oth); } .toast.swing { border-left-color: var(--ink); }
+.toast div { color: var(--ink-2); margin-top: 2px; }
+.toast-x { position: absolute; top: 4px; right: 6px; border: 0; background: none; font-size: 16px; color: var(--ink-3); cursor: pointer; }

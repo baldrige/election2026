@@ -73,15 +73,18 @@ setInterval(saveState, 60 * 1000).unref();
 for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => { saveState(); process.exit(0); }); // Render sends SIGTERM on deploy
 function logCalls(races) {
   for (const r of races) {
-    if (!r.winnerParty || calledSeen.get(r.id) === r.winnerParty) continue;
-    const changed = calledSeen.has(r.id);
-    calledSeen.set(r.id, r.winnerParty);
+    // Keyed by race (e.g. "S:NC"), not by source id, so a race moving between the state feed and
+    // civicAPI isn't logged as a new call.
+    const key = `${r.office}:${r.district || r.state}`;
+    if (!r.winnerParty || calledSeen.get(key) === r.winnerParty) continue;
+    const changed = calledSeen.has(key);
+    calledSeen.set(key, r.winnerParty);
     // Without saved state, calls seen during warm-up already existed at startup: don't log them as new.
     // With saved state we know what was already called, so log them, marked as found after a restart.
     const warm = Date.now() - startedAt < WARMUP_MS;
     if (warm && !restored) continue;
     const w = r.candidates.find((c) => c.winner);
-    state.calls.unshift({ ts: Date.now(), id: r.id, title: r.title, office: r.office, winner: w ? w.name : '',
+    state.calls.unshift({ ts: Date.now(), id: r.id, key, title: r.title, office: r.office, winner: w ? w.name : '',
       party: r.winnerParty, changed, by: r.calledBy || '', ...(warm ? { afterRestart: true } : {}) });
   }
   state.calls = state.calls.slice(0, 300);

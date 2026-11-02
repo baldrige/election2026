@@ -21,6 +21,7 @@ const match = (t = '') => words.every((w) => t.toLowerCase().includes(w));
       const r = await get(`https://api.elections.kalshi.com/trade-api/v2/events?status=open&limit=200${cursor ? `&cursor=${cursor}` : ''}`);
       for (const e of r.events || []) if (match(e.title) || match(e.sub_title)) { n++; console.log(`  ${e.event_ticker.padEnd(28)} series=${String(e.series_ticker).padEnd(14)} ${e.title}`); }
       if (!r.cursor) break; cursor = r.cursor;
+      await new Promise((ok) => setTimeout(ok, 1500)); // stay well under Kalshi's rate limit
     }
     if (!n) console.log('  (none)');
   } catch (e) { console.log('  error:', e.message); }

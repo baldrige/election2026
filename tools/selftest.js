@@ -36,5 +36,38 @@ global.fetch = async (url) => {
 
   const bad = await m.fetchAll({ ...cfg, kalshi: { ...cfg.kalshi, baseUrl: 'https://down.example' } });
   assert.ok(bad.errors.some((e) => e.startsWith('Kalshi')) && bad.markets.length > 0, 'one broken source must not blank the panel');
+  // --- failure handling: rate limits and bad gateways keep last good data and back off ---
+  const { Guard } = require('../lib/guard');
+  const { HttpError, summarize } = require('../lib/http');
+  const g = new Guard(); let calls = 0; const t0 = Date.parse('2026-11-04T02:00:00Z');
+  const ok1 = await g.run('Kalshi', async () => { calls++; return ['m1']; }, t0);
+  assert.deepStrictEqual(ok1.data, ['m1']); assert.strictEqual(ok1.error, null);
+  const lim = await g.run('Kalshi', async () => { calls++; throw new HttpError('HTTP 429', { status: 429, retryAfter: 300 }); }, t0 + 30e3);
+  assert.deepStrictEqual(lim.data, ['m1']); assert.ok(lim.stale);
+  assert.match(lim.error, /^Kalshi: rate-limited \(HTTP 429\); retrying in 5 min; showing data from 9:00 PM ET$/);
+  await g.run('Kalshi', async () => { calls++; return ['never']; }, t0 + 120e3); // still inside Retry-After window
+  assert.strictEqual(calls, 2, 'must not call Kalshi again before Retry-After expires');
+  const back = await g.run('Kalshi', async () => { calls++; return ['m2']; }, t0 + 31e3 + 300e3);
+  assert.deepStrictEqual(back.data, ['m2']); assert.strictEqual(back.error, null);
+  assert.strictEqual(summarize('<html>\n<head><title>502 Bad Gateway</title></head><body><center><h1>502 Bad Gateway</h1></center><hr><center>nginx</center></body></html>'), '502 Bad Gateway');
+
+  // End to end through news.fetchAll: WaPo goes down after one good fetch; its headlines stay.
+  const news = require('../lib/news');
+  let wapoUp = true;
+  global.fetch = async (url) => {
+    if (url.includes('wapo.example')) {
+      if (!wapoUp) return { ok: false, status: 502, headers: new Map(), text: async () => '<html><head><title>502 Bad Gateway</title></head><body>nginx</body></html>' };
+      return { ok: true, status: 200, text: async () => '<rss><item><title>Election night turnout</title><link>https://wapo.example/a</link><pubDate>Tue, 03 Nov 2026 20:00:00 -0500</pubDate></item></rss>' };
+    }
+    return { ok: false, status: 404, headers: new Map(), text: async () => '' };
+  };
+  const ncfg = { feeds: [{ name: 'Washington Post', url: 'https://wapo.example/rss' }], keywordFilter: 'elect' };
+  assert.strictEqual((await news.fetchAll(ncfg)).items.length, 1);
+  wapoUp = false;
+  const down = await news.fetchAll(ncfg);
+  assert.strictEqual(down.items.length, 1, 'last good headlines are kept');
+  assert.match(down.errors[0], /^Washington Post: HTTP 502 from wapo\.example \(502 Bad Gateway\); retrying in 30 s; showing data from /);
+  console.log('    e.g.', down.errors[0]);
+
   console.log('selftest: all checks passed');
 })().catch((e) => { console.error('selftest FAILED:', e.message); process.exit(1); });

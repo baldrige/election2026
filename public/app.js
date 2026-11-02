@@ -109,7 +109,7 @@ function renderMarkets() {
     const delta = h.length > 1 ? (h[h.length - 1][1] - h[0][1]) * 100 : 0;
     const others = m.outcomes.filter((x) => x !== o).slice(0, 3).map((x) => `${esc(x.label)} ${(x.prob * 100).toFixed(0)}%`).join(' · ');
     return `<div class="mkt">
-      <div class="mkt-h"><span>${esc(m.source)}</span>${m.volume ? `<span>Vol ${fmtNum(Math.round(m.volume))}</span>` : ''}</div>
+      <div class="mkt-h"><span>${esc(m.source)}${m.stale ? ` · <b>as of ${fmtTime(m.asOf)}</b>` : ''}</span>${m.volume ? `<span>Vol ${fmtNum(Math.round(m.volume))}</span>` : ''}</div>
       <div class="mkt-t"><a href="${esc(m.url)}" target="_blank" rel="noopener">${esc(m.title)}</a></div>
       <div class="mkt-row">
         <div><span class="p">${(o.prob * 100).toFixed(0)}%</span> ${esc(o.label)}

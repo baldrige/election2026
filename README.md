@@ -73,7 +73,11 @@ Set `DASHBOARD_PASSWORD` to require a password (any username works).
 
 **Terms of use:** these are public government sites, but check each state's terms and be gentle. The polling intervals above are deliberately modest. Michigan's state web terms reportedly restrict automated access; disable it (`"enabled": false`) if that concerns you.
 
-**Alaska certificate:** Alaska's server has been reported to send an incomplete TLS certificate chain. If `check-states` shows a certificate error for AK, download the missing intermediate certificate (GlobalSign, named in the browser's certificate viewer for elections.alaska.gov) and start the server with `NODE_EXTRA_CA_CERTS=/path/to/intermediate.pem`. Never turn off TLS verification.
+**Alaska certificate:** Alaska's server sends the wrong intermediate certificate: GlobalSign's 2018 one, while its certificate was issued by the 2025 one. Node rejects that. The dashboard completes the chain automatically, the way browsers do (`lib/aia.js`):
+1. It reads the site certificate's issuer URL (Authority Information Access) and downloads that intermediate.
+2. It accepts the intermediate only if it's a CA certificate signed by one of Node's built-in trusted roots.
+3. It makes the request with full verification, hostname checks included.
+TLS verification is never turned off for the request. If automatic completion fails, the AK card says why. As a fallback, save the intermediate as PEM and start the server with `NODE_EXTRA_CA_CERTS=/path/to/intermediate.pem`.
 
 `npm test` runs the parsers against real files saved from the state sites, in `test/fixtures/`.
 

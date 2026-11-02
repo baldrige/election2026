@@ -73,10 +73,9 @@ const t = async (name, fn) => { await fn(); n++; console.log('  ok', name); };
     const cfg = { electionDate: '2026-11-03', civicapi: { baseUrl: 'https://civicapi.org/api/v2', senateStates: ['SC'], governorStates: ['NH'], house: false, raceIds: { 'S:SC': 87409 } } };
     const p = new C.CivicApiProvider(cfg, { now: () => now });
     await p.step(); // S:SC fetch
-    await p.step(); // G:NH search -> id 999 (primary ignored)
+    await p.step(); // G:NH search -> id 999 (primary ignored), then fetched at once -> test data
     assert.strictEqual(p.races[1].id, 999);
     await p.step(); // S:SC again -> 304
-    await p.step(); // G:NH fetch -> test data
     assert.strictEqual(p.results().length, 1, 'test-data race hidden, SC kept after 304');
     assert.match(p.races[1].error, /test data/);
     assert.ok(calls.some((u) => u.includes('query=New%20Hampshire%20Governor&date=2026-11-03')));
@@ -96,7 +95,10 @@ const t = async (name, fn) => { await fn(); n++; console.log('  ok', name); };
       'Mississippi US Senate': [], 'Mississippi Senate': [{ id: 9, province: 'MS', election_type: 'State Senate', election_name: 'Mississippi State Senate District 1', election_date: '2026-11-03' }], 'Mississippi': [],
     };
     const queries = [];
-    global.fetch = async (url) => { const q = new URL(url).searchParams.get('query'); queries.push(q); return reply({ races: listings[q] || [] }); };
+    global.fetch = async (url) => {
+      if (!url.includes('/race/search')) return { ok: false, status: 404, headers: new Map(), json: async () => ({}), text: async () => '' };
+      const q = new URL(url).searchParams.get('query'); queries.push(q); return reply({ races: listings[q] || [] });
+    };
     const cfg = { electionDate: '2026-11-03', civicapi: { baseUrl: 'https://civicapi.org/api/v2', senateStates: ['AR', 'MS'], governorStates: [], house: false } };
     const p = new C.CivicApiProvider(cfg);
     await p.step(); // AR

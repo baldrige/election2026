@@ -65,7 +65,7 @@ select, input[type=search] { font: inherit; color: var(--ink); background: var(-
 .race-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
 .race { border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
 .race-h { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
-.race-h b { font-size: 14px; } .race-h .rep { color: var(--ink-3); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.race-h b { font-size: 14px; white-space: nowrap; } .race-h .rep { color: var(--ink-3); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; min-width: 0; }
 .called { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 4px; color: #fff; }
 .cand { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; margin-top: 6px; font-variant-numeric: tabular-nums; }
 .cand .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

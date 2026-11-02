@@ -1,0 +1,117 @@
+[
+ {
+  "CATKEY": "C_1",
+  "CAT": "Federal",
+  "C": "United States Representative District 1",
+  "K": "1100",
+  "AggID": null,
+  "regvoters": 0,
+  "BCxContest": 0,
+  "VF": 1,
+  "TP": 20,
+  "PR": 20,
+  "TV": 0,
+  "BC": 0,
+  "RC": 0,
+  "RO": 0,
+  "CH": [
+   "Christina Bohannan",
+   "Mariannette Miller-Meeks",
+   "Write-in"
+  ],
+  "CHAggId": null,
+  "P": [
+   "DEM",
+   "REP",
+   ""
+  ],
+  "PCT": [
+   49.7867551524109,
+   49.9797139669338,
+   0.233530880655335
+  ],
+  "V": [
+   206156,
+   206955,
+   967
+  ],
+  "T": 414078,
+  "W": [
+   0,
+   1,
+   0
+  ],
+  "CRC": [
+   0,
+   0,
+   0
+  ],
+  "CRO": [
+   0,
+   0,
+   0
+  ],
+  "IsCumulative": null,
+  "CumulativeVotes": null,
+  "CumulativeChoices": null,
+  "CumulativePercentages": null,
+  "IsContestNoChoice": 0,
+  "IsRCV": false,
+  "RCVAwaitingResults": false
+ },
+ {
+  "CATKEY": "C_2",
+  "CAT": "State",
+  "SUBCATKEY": "C_2_1",
+  "SUBCAT": "State Senate 1 - 25",
+  "C": "State Senator District 2",
+  "K": "1500",
+  "AggID": null,
+  "regvoters": 0,
+  "BCxContest": 0,
+  "VF": 1,
+  "TP": 3,
+  "PR": 3,
+  "TV": 0,
+  "BC": 0,
+  "RC": 0,
+  "RO": 0,
+  "CH": [
+   "Jeff Taylor",
+   "Write-in"
+  ],
+  "CHAggId": null,
+  "P": [
+   "REP",
+   ""
+  ],
+  "PCT": [
+   99.1149803128274,
+   0.885019687172633
+  ],
+  "V": [
+   27438,
+   245
+  ],
+  "T": 27683,
+  "W": [
+   1,
+   0
+  ],
+  "CRC": [
+   0,
+   0
+  ],
+  "CRO": [
+   0,
+   0
+  ],
+  "IsCumulative": null,
+  "CumulativeVotes": null,
+  "CumulativeChoices": null,
+  "CumulativePercentages": null,
+  "IsContestNoChoice": 0,
+  "IsRCV": false,
+  "RCVAwaitingResults": false
+ }
+]

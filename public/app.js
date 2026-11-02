@@ -16,7 +16,7 @@ function ago(ts) {
   return new Date(ts).toLocaleDateString('en-US', { ...ET, month: 'short', day: 'numeric' });
 }
 
-const ui = { office: 'S', view: 'watch', q: '' };
+const ui = { office: 'S', view: 'watch', q: '', feedsOpen: false };
 let S = null; // last server state
 
 // ---------- balance of power ----------
@@ -103,8 +103,8 @@ function renderRaces() {
   $('raceErr').textContent = err ? `Results: ${err}` : '';
   const feeds = S.results.feeds || [];
   $('feedStatus').hidden = !feeds.length || ui.office !== 'S';
-  $('feedStatus').innerHTML = feeds.length ? `<details><summary>State results feeds: ${feeds.filter((f) => f.ok).length} of ${feeds.length} working</summary><ul>${
-    feeds.map((f) => `<li><span class="dot ${f.ok ? 'ok' : 'bad'}">${esc(f.state)}</span> ${f.url ? `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.message)}</a>` : esc(f.message)}${f.stale ? ' (showing last good data)' : ''}${f.updated ? ` <span class="sub">· ${ago(f.updated)}</span>` : ''}</li>`).join('')}</ul></details>` : '';
+  $('feedStatus').innerHTML = feeds.length ? `<details${ui.feedsOpen ? ' open' : ''}><summary>State results feeds: ${feeds.filter((f) => f.ok).length} of ${feeds.filter((f) => !f.info).length} working${feeds.some((f) => f.info) ? ` · ${feeds.filter((f) => f.info).map((f) => f.state).join(', ')} have no state feed` : ''}</summary><ul>${
+    feeds.map((f) => `<li><span class="dot ${f.ok ? 'ok' : f.info ? '' : 'bad'}">${esc(f.state)}</span> ${f.url ? `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.message)}</a>` : esc(f.message)}${f.stale ? ' (showing last good data)' : ''}${f.updated ? ` <span class="sub">· ${ago(f.updated)}</span>` : ''}</li>`).join('')}</ul></details>` : '';
   const list = selectRaces();
   $('raceList').innerHTML = list.length ? list.map(raceCard).join('')
     : `<p class="empty">${S.results.races.length ? 'No races match.' : 'Waiting for results…'}</p>`;
@@ -204,6 +204,7 @@ $('officeTabs').addEventListener('click', (e) => {
   [...$('officeTabs').children].forEach((x) => x.classList.toggle('on', x === b));
   if (S) renderRaces();
 });
+$('feedStatus').addEventListener('toggle', (e) => { ui.feedsOpen = e.target.open; }, true);
 $('viewSel').addEventListener('change', (e) => { ui.view = e.target.value; if (S) renderRaces(); });
 $('search').addEventListener('input', (e) => { ui.q = e.target.value.trim(); if (S) renderRaces(); });
 

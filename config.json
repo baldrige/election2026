@@ -2,56 +2,167 @@
   "_readme": "Edit this file to choose races, markets and feeds. Restart the server after changes.",
   "port": 8080,
   "electionDate": "2026-11-03",
-
   "results": {
     "provider": "ap",
     "_provider_note": "ap = Associated Press Elections API (needs AP_API_KEY env var). demo = clearly-labelled fake data for testing the UI.",
     "apBaseUrl": "https://api.ap.org/v3",
-    "offices": ["S", "H", "G"],
+    "offices": [
+      "S",
+      "H",
+      "G"
+    ],
     "pollSeconds": 30,
     "_holdovers_note": "Senate seats NOT on the 2026 ballot (verify before election day). Independents who caucus with Democrats are counted as Dem.",
-    "senateHoldovers": { "Dem": 34, "GOP": 31 },
+    "senateHoldovers": {
+      "Dem": 34,
+      "GOP": 31
+    },
     "watchStates": {
-      "S": ["GA", "MI", "NC", "ME", "NH", "OH", "TX", "IA", "AK", "MN", "NE", "FL"],
-      "G": ["AZ", "GA", "MI", "WI", "PA", "NV", "KS", "NY", "OH", "IA"],
+      "S": [
+        "GA",
+        "MI",
+        "NC",
+        "ME",
+        "NH",
+        "OH",
+        "TX",
+        "IA",
+        "AK",
+        "MN",
+        "NE",
+        "FL"
+      ],
+      "G": [
+        "AZ",
+        "GA",
+        "MI",
+        "WI",
+        "PA",
+        "NV",
+        "KS",
+        "NY",
+        "OH",
+        "IA"
+      ],
       "H": []
     },
-    "_watchHouseNote": "For House races use state-district codes like \"PA-07\". Leave empty to show the closest House races automatically."
+    "_watchHouseNote": "For House races use state-district codes like \"PA-07\". Leave empty to show the closest House races automatically.",
+    "_stateFeedsNote": "Free official state results for the Senate watch list (counts only, no race calls). URLs below are filled from defaults in lib/states/<st>.js unless you set \"url\". Check them on election morning with: node tools/check-states.js",
+    "stateFeeds": {
+      "GA": {
+        "enabled": true,
+        "_note": "Election id is discovered automatically once Georgia publishes it; or set \"electionId\"."
+      },
+      "MI": {
+        "enabled": true,
+        "_note": "URL pattern inferred from 2020/2022; confirm on election night."
+      },
+      "NC": {
+        "enabled": true
+      },
+      "ME": {
+        "enabled": true,
+        "_note": "No live state feed; shows a notice."
+      },
+      "NH": {
+        "enabled": true,
+        "_note": "No live state feed; shows a notice."
+      },
+      "OH": {
+        "enabled": true
+      },
+      "TX": {
+        "enabled": true,
+        "electionId": 53815
+      },
+      "IA": {
+        "enabled": true,
+        "electionId": 127077
+      },
+      "AK": {
+        "enabled": true,
+        "_note": "Same file served the August primary; confirm it switches to the general. First-choice votes only."
+      },
+      "MN": {
+        "enabled": true
+      },
+      "NE": {
+        "enabled": true,
+        "_note": "Not polled (portal terms); shows a notice."
+      },
+      "FL": {
+        "enabled": true
+      }
+    }
   },
-
   "markets": {
     "pollSeconds": 60,
     "_note": "IDs/slugs for 2026 markets. Run `node tools/find-markets.js senate` to discover current ones. Bad entries show up as errors on the dashboard.",
     "kalshi": {
       "baseUrl": "https://api.elections.kalshi.com/trade-api/v2",
-      "seriesTickers": ["CONTROLH", "CONTROLS"],
+      "seriesTickers": [
+        "CONTROLH",
+        "CONTROLS"
+      ],
       "eventTickers": []
     },
     "polymarket": {
       "baseUrl": "https://gamma-api.polymarket.com",
-      "eventSlugs": ["which-party-will-win-the-house-in-2026", "which-party-will-win-the-senate-in-2026"]
+      "eventSlugs": [
+        "which-party-will-win-the-house-in-2026",
+        "which-party-will-win-the-senate-in-2026"
+      ]
     },
     "predictit": {
       "baseUrl": "https://www.predictit.org/api/marketdata",
       "marketIds": []
     }
   },
-
   "news": {
     "pollSeconds": 120,
     "maxItems": 120,
     "keywordFilter": "elect|vote|voter|ballot|poll|race|senate|house|governor|campaign|midterm|precinct|turnout|concede|projected|democrat|republican|gop",
     "feeds": [
-      { "name": "NPR",              "url": "https://feeds.npr.org/1014/rss.xml" },
-      { "name": "New York Times",   "url": "https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml" },
-      { "name": "Washington Post",  "url": "https://feeds.washingtonpost.com/rss/politics" },
-      { "name": "Politico",         "url": "https://rss.politico.com/politics-news.xml" },
-      { "name": "PBS NewsHour",     "url": "https://www.pbs.org/newshour/feeds/rss/politics" },
-      { "name": "CBS News",         "url": "https://www.cbsnews.com/latest/rss/politics" },
-      { "name": "ABC News",         "url": "https://feeds.abcnews.com/abcnews/politicsheadlines" },
-      { "name": "Fox News",         "url": "https://moxie.foxnews.com/google-publisher/politics.xml" },
-      { "name": "BBC",              "url": "https://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml" },
-      { "name": "The Hill",         "url": "https://thehill.com/homenews/campaign/feed/" }
+      {
+        "name": "NPR",
+        "url": "https://feeds.npr.org/1014/rss.xml"
+      },
+      {
+        "name": "New York Times",
+        "url": "https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml"
+      },
+      {
+        "name": "Washington Post",
+        "url": "https://feeds.washingtonpost.com/rss/politics"
+      },
+      {
+        "name": "Politico",
+        "url": "https://rss.politico.com/politics-news.xml"
+      },
+      {
+        "name": "PBS NewsHour",
+        "url": "https://www.pbs.org/newshour/feeds/rss/politics"
+      },
+      {
+        "name": "CBS News",
+        "url": "https://www.cbsnews.com/latest/rss/politics"
+      },
+      {
+        "name": "ABC News",
+        "url": "https://feeds.abcnews.com/abcnews/politicsheadlines"
+      },
+      {
+        "name": "Fox News",
+        "url": "https://moxie.foxnews.com/google-publisher/politics.xml"
+      },
+      {
+        "name": "BBC",
+        "url": "https://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml"
+      },
+      {
+        "name": "The Hill",
+        "url": "https://thehill.com/homenews/campaign/feed/"
+      }
     ]
   }
 }

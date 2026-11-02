@@ -1,0 +1,13 @@
+ElectionDate	PartyCode	PartyName	RaceCode	RaceName	CountyCode	CountyName	Juris1num	Juris2num	Precincts	PrecinctsReporting	CanNameLast	CanNameFirst	CanNameMiddle	CanVotes
+11/03/2026	REP	Republican Party	USS	United States Senator	ALA	Alachua	   	 	63	0	Moody	Ashley		0
+11/03/2026	REP	Republican Party	USS	United States Senator	DAD	Miami-Dade	   	 	718	0	Moody	Ashley		0
+11/03/2026	REP	Republican Party	USS	United States Senator	DES	Desoto	   	 	15	0	Moody	Ashley		0
+11/03/2026	REP	Republican Party	USS	United States Senator	STJ	St. Johns	   	 	55	0	Moody	Ashley		0
+11/03/2026	DEM	Democratic Party	USS	United States Senator	ALA	Alachua	   	 	63	0	Nixon	Angie		0
+11/03/2026	DEM	Democratic Party	USS	United States Senator	DAD	Miami-Dade	   	 	718	0	Nixon	Angie		0
+11/03/2026	DEM	Democratic Party	USS	United States Senator	DES	Desoto	   	 	15	0	Nixon	Angie		0
+11/03/2026	DEM	Democratic Party	USS	United States Senator	STJ	St. Johns	   	 	55	0	Nixon	Angie		0
+11/03/2026	NPA	No Party Affiliation	USS	United States Senator	ALA	Alachua	   	 	63	0	Gillespie	Neil	J.	0
+11/03/2026	NPA	No Party Affiliation	USS	United States Senator	DAD	Miami-Dade	   	 	718	0	Gillespie	Neil	J.	0
+11/03/2026	NPA	No Party Affiliation	USS	United States Senator	DES	Desoto	   	 	15	0	Gillespie	Neil	J.	0
+11/03/2026	NPA	No Party Affiliation	USS	United States Senator	STJ	St. Johns	   	 	55	0	Gillespie	Neil	J.	0

@@ -1,0 +1,295 @@
+{
+ "electionDate": "2024-11-05",
+ "electionName": "November General Election",
+ "createdAt": "2025-01-30T13:59:59.5881725Z",
+ "results": {
+  "id": "09378a07-e6cf-4f66-be7c-ca4aa534f99a",
+  "name": "Georgia",
+  "reportingStatuses": [],
+  "ballotItems": [
+   {
+    "type": "State",
+    "id": "5100",
+    "name": "President of the US",
+    "voteFor": 1,
+    "ballotOrder": 5100,
+    "precinctsParticipating": null,
+    "precinctsReporting": null,
+    "contestType": "Candidate",
+    "ballotOptions": [
+     {
+      "id": "1",
+      "name": "Donald J. Trump (Rep)",
+      "ballotOrder": 1,
+      "voteCount": 2663117,
+      "politicalParty": "Rep",
+      "groupResults": [
+       {
+        "groupName": "Election Day",
+        "voteCount": 647080,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Absentee by Mail",
+        "voteCount": 98151,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Provisional",
+        "voteCount": 1444,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Advanced Voting",
+        "voteCount": 1916442,
+        "isFromVirtualPrecinct": false
+       }
+      ]
+     },
+     {
+      "id": "2",
+      "name": "Kamala D. Harris (Dem)",
+      "ballotOrder": 2,
+      "voteCount": 2548017,
+      "politicalParty": "Dem",
+      "groupResults": [
+       {
+        "groupName": "Election Day",
+        "voteCount": 558607,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Absentee by Mail",
+        "voteCount": 183133,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Provisional",
+        "voteCount": 2164,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Advanced Voting",
+        "voteCount": 1804113,
+        "isFromVirtualPrecinct": false
+       }
+      ]
+     },
+     {
+      "id": "3",
+      "name": "Chase Oliver (Lib)",
+      "ballotOrder": 3,
+      "voteCount": 20684,
+      "politicalParty": "Lib",
+      "groupResults": [
+       {
+        "groupName": "Election Day",
+        "voteCount": 8290,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Absentee by Mail",
+        "voteCount": 1027,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Provisional",
+        "voteCount": 13,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Advanced Voting",
+        "voteCount": 11354,
+        "isFromVirtualPrecinct": false
+       }
+      ]
+     },
+     {
+      "id": "4",
+      "name": "Jill Stein (Grn)",
+      "ballotOrder": 4,
+      "voteCount": 18229,
+      "politicalParty": "Grn",
+      "groupResults": [
+       {
+        "groupName": "Election Day",
+        "voteCount": 7280,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Absentee by Mail",
+        "voteCount": 1047,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Provisional",
+        "voteCount": 24,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Advanced Voting",
+        "voteCount": 9878,
+        "isFromVirtualPrecinct": false
+       }
+      ]
+     }
+    ],
+    "rankedChoiceResults": null
+   },
+   {
+    "type": "State",
+    "id": "30100",
+    "name": "US House of Representatives - District 1",
+    "voteFor": 1,
+    "ballotOrder": 30100,
+    "precinctsParticipating": null,
+    "precinctsReporting": null,
+    "contestType": "Candidate",
+    "ballotOptions": [
+     {
+      "id": "7",
+      "name": "Earl L. \"Buddy\" Carter (I) (Rep)",
+      "ballotOrder": 8,
+      "voteCount": 220576,
+      "politicalParty": "Rep",
+      "groupResults": [
+       {
+        "groupName": "Election Day",
+        "voteCount": 56186,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Absentee by Mail",
+        "voteCount": 8262,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Provisional",
+        "voteCount": 83,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Advanced Voting",
+        "voteCount": 156045,
+        "isFromVirtualPrecinct": false
+       }
+      ]
+     },
+     {
+      "id": "8",
+      "name": "Patti Hewitt (Dem)",
+      "ballotOrder": 9,
+      "voteCount": 135281,
+      "politicalParty": "Dem",
+      "groupResults": [
+       {
+        "groupName": "Election Day",
+        "voteCount": 35127,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Absentee by Mail",
+        "voteCount": 12282,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Provisional",
+        "voteCount": 87,
+        "isFromVirtualPrecinct": false
+       },
+       {
+        "groupName": "Advanced Voting",
+        "voteCount": 87785,
+        "isFromVirtualPrecinct": false
+       }
+      ]
+     }
+    ],
+    "rankedChoiceResults": null
+   }
+  ]
+ },
+ "localResults": [
+  {
+   "id": "c9dff029-5cf4-4fd0-a50b-b46ad76d30d4",
+   "name": "Candler County",
+   "ballotItems": [
+    {
+     "type": "Local",
+     "id": "5100",
+     "name": "President of the US",
+     "voteFor": 1,
+     "ballotOrder": 1,
+     "precinctsParticipating": 1,
+     "precinctsReporting": 1,
+     "contestType": "Candidate",
+     "rankedChoiceResults": null
+    }
+   ],
+   "reportingStatuses": [
+    {
+     "groupName": "Advanced Voting",
+     "status": "Fully Reported"
+    },
+    {
+     "groupName": "Election Day",
+     "status": "Fully Reported"
+    },
+    {
+     "groupName": "Absentee by Mail",
+     "status": "Fully Reported"
+    },
+    {
+     "groupName": "Provisional",
+     "status": "Fully Reported"
+    }
+   ]
+  },
+  {
+   "id": "f4ce35e9-d8f2-46b3-897c-cec68a0371a1",
+   "name": "Chatham County",
+   "ballotItems": [
+    {
+     "type": "Local",
+     "id": "5100",
+     "name": "President of the US",
+     "voteFor": 1,
+     "ballotOrder": 1,
+     "precinctsParticipating": 87,
+     "precinctsReporting": 87,
+     "contestType": "Candidate",
+     "rankedChoiceResults": null
+    },
+    {
+     "type": "Local",
+     "id": "30100",
+     "name": "US House of Representatives - District 1",
+     "voteFor": 1,
+     "ballotOrder": 2,
+     "precinctsParticipating": 87,
+     "precinctsReporting": 87,
+     "contestType": "Candidate",
+     "rankedChoiceResults": null
+    }
+   ],
+   "reportingStatuses": [
+    {
+     "groupName": "Advanced Voting",
+     "status": "Fully Reported"
+    },
+    {
+     "groupName": "Election Day",
+     "status": "Fully Reported"
+    },
+    {
+     "groupName": "Absentee by Mail",
+     "status": "Fully Reported"
+    },
+    {
+     "groupName": "Provisional",
+     "status": "Fully Reported"
+    }
+   ]
+  }
+ ]
+}

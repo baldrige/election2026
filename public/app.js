@@ -92,7 +92,11 @@ function oddsBlock(r) {
 }
 function raceCard(r) {
   const w = r.candidates.find((c) => c.winner);
-  const rep = r.reportingLabel || (r.eevp != null ? `${Math.round(r.eevp)}% in` : 'no votes yet');
+  // Before any votes are counted, sources can still report units as "reporting" (blank uploads),
+  // so show "No votes yet" and keep the source's own figure in the tooltip.
+  const noVotes = !r.candidates.some((c) => c.votes > 0);
+  const srcRep = r.reportingLabel || (r.eevp != null ? `${Math.round(r.eevp)}% in` : '');
+  const rep = noVotes ? `<span title="${esc(srcRep ? `Source says: ${srcRep}` : '')}">No votes yet</span>` : esc(srcRep || 'reporting unknown');
   const cands = r.candidates.slice(0, 3).map((c) => `
     <div class="cand">
       <span class="nm">${c.winner ? '<span class="check" aria-label="winner">✓</span> ' : ''}${esc(c.name)} <span class="sub">(${esc(partyLabel(c.party))})</span></span>

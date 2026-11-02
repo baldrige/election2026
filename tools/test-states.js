@@ -35,10 +35,10 @@ t('GA 2024 export: contest parsed, county precincts summed, party suffix strippe
   console.log('    ', show(r));
 });
 
-t('IA 2026 Clarity summary: Senate found, write-in dropped, counties label', () => {
+t('IA 2026 Clarity summary: Senate found, write-in dropped, counties reporting label', () => {
   const [r] = S('ia').parse(json('ia_summary_2026.json'));
   assert.deepStrictEqual(r.candidates.map((c) => c.name).sort(), ['Ashley Hinson', 'Josh Turek', 'Thomas Laehn']);
-  assert.match(r.reportingLabel, /of 99 counties/);
+  assert.match(r.reportingLabel, /^2 of 99 counties reporting$/);
   const live = S('ia').parseClarity(json('ia_summary_2024.json').map((c) => ({ ...c, C: 'United States Senator' })), 'IA');
   assert.ok(live[0].candidates[0].votes > 100000); // real 2024 counts, contest renamed
 });

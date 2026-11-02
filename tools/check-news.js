@@ -6,7 +6,7 @@
 // If the dashboard's own request fails, it also tries a generic client, to tell "server down"
 // apart from "blocks this kind of client/network".
 const cfg = require('../config.json');
-const { parseFeed } = require('../lib/news');
+const { parseFeed, fallbacksOf } = require('../lib/news');
 const { summarize } = require('../lib/http');
 
 const OURS = 'ElectionNightDashboard/1.0 (personal, non-commercial)';
@@ -36,7 +36,7 @@ async function probe(url, ua) {
     const ours = await probe(f.url, OURS);
     console.log(`    dashboard client: ${ours}`);
     if (!/^HTTP 200/.test(ours) || / 0 items/.test(ours)) console.log(`    generic client:   ${await probe(f.url, GENERIC)}`);
-    if (f.fallbackUrl) console.log(`  fallback (${f.fallbackName || 'fallback'}):\n    ${await probe(f.fallbackUrl, OURS)}`);
+    for (const fb of fallbacksOf(f)) console.log(`  fallback: ${fb.name}\n    ${fb.url}\n    ${await probe(fb.url, OURS)}`);
   }
   console.log('\nIf the dashboard client fails but the generic client works, the site is blocking this client;'
     + '\nif both fail with 5xx, the site\'s feed server is down; if both work here, the problem was temporary.\n');

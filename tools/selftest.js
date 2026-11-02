@@ -117,16 +117,22 @@ global.fetch = async (url) => {
     if (url.startsWith('https://own.example')) return ownUp
       ? { ok: true, status: 200, text: async () => '<rss><item><title>Own feed: polls close in Virginia</title><link>https://own.example/1</link><pubDate>Tue, 03 Nov 2026 19:00:00 -0500</pubDate></item></rss>' }
       : { ok: false, status: 502, headers: new Map(), text: async () => '<html><head><title>502 Bad Gateway</title></head></html>' };
+    if (url.startsWith('https://site.example')) return { ok: false, status: 502, headers: new Map(), text: async () => '' };
     if (url.startsWith('https://news.google.com/')) return { ok: true, status: 200, text: async () => '<rss><channel><item><title>Senate control hinges on Georgia - The Washington Post</title><link>https://news.google.com/rss/articles/abc</link><pubDate>Tue, 03 Nov 2026 21:00:00 GMT</pubDate><description>&lt;a href="x"&gt;Senate control hinges on Georgia&lt;/a&gt;</description><source url="https://www.washingtonpost.com">The Washington Post</source></item></channel></rss>' };
     return { ok: false, status: 404, headers: new Map(), text: async () => '' };
   };
-  const fcfg = { keywordFilter: 'elect|poll|senate', feeds: [{ name: 'Example Post', url: 'https://own.example/rss', fallbackUrl: 'https://news.google.com/rss/search?q=x', fallbackName: 'Google News', fallbackTitleSuffix: 'The Washington Post' }] };
+  const fcfg = { keywordFilter: 'elect|poll|senate', feeds: [{ name: 'Example Post', url: 'https://own.example/rss', fallbacks: [
+    { name: 'site feed', url: 'https://site.example/rss' }, // also down: 502
+    { name: 'Google News', url: 'https://news.google.com/rss/search?q=x', titleSuffix: 'The Washington Post' }] }] };
   const up = await newsMod.fetchAll(fcfg);
   assert.deepStrictEqual(up.items.map((i) => i.title), ['Own feed: polls close in Virginia']); assert.strictEqual(up.errors.length, 0, 'fallback unused while the own feed works');
   ownUp = false;
   const fb = await newsMod.fetchAll(fcfg);
   assert.deepStrictEqual(fb.items.map((i) => [i.source, i.title, i.via]), [['Example Post', 'Senate control hinges on Georgia', 'Google News']]);
-  assert.match(fb.errors[0], /^Example Post: own feed failing \(HTTP 502 .*502 Bad Gateway\)\); showing its headlines via Google News$/);
+  assert.match(fb.errors[0], /^Example Post: own feed failing \(HTTP 502 .*502 Bad Gateway\)\); showing its headlines via Google News$/, 'second fallback used when the first also fails');
+  // All fallbacks failing: one message naming both problems; last good headlines kept.
+  const allDown = await newsMod.fetchAll({ ...fcfg, feeds: [{ name: 'Other Post', url: 'https://own.example/rss', fallbacks: [{ name: 'site feed', url: 'https://site.example/rss' }] }] });
+  assert.match(allDown.errors[0], /^Other Post: HTTP 502 .*fallbacks also failing \(Other Post via site feed: HTTP 502/);
 
   console.log('selftest: all checks passed');
 })().catch((e) => { console.error('selftest FAILED:', e.message); process.exit(1); });

@@ -241,9 +241,18 @@
       {
         "name": "Washington Post",
         "url": "https://feeds.washingtonpost.com/rss/politics",
-        "fallbackUrl": "https://news.google.com/rss/search?q=site:washingtonpost.com+(election+OR+politics+OR+senate+OR+house+OR+governor)+when:2d&hl=en-US&gl=US&ceid=US:en",
-        "fallbackName": "Google News",
-        "fallbackTitleSuffix": "The Washington Post"
+        "_fallbacksNote": "Used only while the main feed fails, in order. Google News was removed: it serves an automated-traffic block page (503) to Render's servers. Check with: npm run check-news -- \"Washington Post\"",
+        "fallbacks": [
+          {
+            "name": "washingtonpost.com feed",
+            "url": "https://www.washingtonpost.com/arcio/rss/category/politics/"
+          },
+          {
+            "name": "Bing News",
+            "url": "https://www.bing.com/news/search?q=site%3Awashingtonpost.com+(election+OR+senate+OR+house+OR+governor+OR+politics)&format=rss&qft=sortbydate%3d%221%22",
+            "titleSuffix": "The Washington Post"
+          }
+        ]
       },
       {
         "name": "Politico",
@@ -274,6 +283,6 @@
         "url": "https://thehill.com/homenews/campaign/feed/"
       }
     ],
-    "_fallbackNote": "A feed may set fallbackUrl (used only while its own feed fails). Google News search RSS restricted to the publisher's site works for most outlets."
+    "_fallbackNote": "A feed may set fallbacks: [{name, url, titleSuffix}], tried in order only while its own feed fails."
   }
 }

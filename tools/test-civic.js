@@ -120,6 +120,13 @@ const t = async (name, fn) => { await fn(); n++; console.log('  ok', name); };
     const nc = m.find((r) => r.state === 'NC');
     assert.strictEqual(nc.source, 'NC State Board of Elections'); assert.strictEqual(nc.winnerParty, 'Dem'); assert.strictEqual(nc.calledBy, 'civicAPI');
     assert.strictEqual(nc.candidates.find((c) => c.winner).name, 'Roy Cooper');
+    // Alaska top-4: two Republicans on the ballot, so the call is matched by the winner's name.
+    const ak = { id: 'state:AK:S', state: 'AK', special: false, office: 'S', source: 'Alaska Division of Elections', winnerParty: null, candidates: [
+      { name: 'Dan S. Sullivan', party: 'GOP', votes: 9 }, { name: 'Gerald L. Heikes', party: 'GOP', votes: 1 }, { name: 'Mary Peltola', party: 'Dem', votes: 8 }, { name: 'Daniel J. Sullivan Jr.', party: 'Oth', votes: 1 }] };
+    const akCiv = { id: 'civic:S:AK', state: 'AK', special: false, office: 'S', winnerParty: 'GOP', candidates: [{ name: 'Dan Sullivan', party: 'GOP', winner: true }, { name: 'Mary Peltola', party: 'Dem' }] };
+    const [akOut] = mergeSenate([ak], [akCiv], () => true);
+    assert.strictEqual(akOut.source, 'Alaska Division of Elections'); assert.strictEqual(akOut.calledBy, 'civicAPI');
+    assert.deepStrictEqual(akOut.candidates.filter((c) => c.winner).map((c) => c.name), ['Dan S. Sullivan']);
     const down = mergeSenate([{ ...state }], [civ], () => false);
     assert.strictEqual(down.length, 1); assert.strictEqual(down[0].source, 'civicAPI (civicapi.org)');
   });

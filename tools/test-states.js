@@ -98,6 +98,7 @@ t('AK precinct CSV: primary file rejected; general-sized file parsed, names flip
   const [r] = S('ak').parse(general);
   assert.strictEqual(r.candidates.length, 4);
   assert.ok(r.candidates.some((c) => c.name === 'Dustin Thomas House Darden'));
+  assert.strictEqual(S('ak').flipName('Sullivan, Daniel J. Jr.'), 'Daniel J. Sullivan Jr.', 'suffix stays last');
   assert.match(r.reportingLabel, /first-choice/);
   const gl = general.split('\n'); const [r2] = S('ak').parse([...gl, gl[1]].join('\n'));
   assert.strictEqual(r2.candidates.reduce((a, c) => a + c.votes, 0), r.candidates.reduce((a, c) => a + c.votes, 0));

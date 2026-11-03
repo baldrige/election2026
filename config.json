@@ -43,7 +43,12 @@
       },
       "AK": {
         "enabled": true,
-        "_note": "Same file served the August primary; confirm it switches to the general. First-choice votes only."
+        "_note": "First-choice votes only. On Nov 3 the /enr26/ address returned 404 (it held the August primary). The addresses below are tried in order; the first that works is remembered. If none work, find the general-election precinct CSV link on elections.alaska.gov and put it first.",
+        "urls": [
+          "https://www.elections.alaska.gov/enr/results/GA_ENR_Precinct_State_of_Alaska.csv",
+          "https://www.elections.alaska.gov/enr26/results/GA_ENR_Precinct_State_of_Alaska.csv",
+          "https://www.elections.alaska.gov/results/26GENR/ENRbyPrecinct.csv"
+        ]
       },
       "MN": {
         "enabled": true

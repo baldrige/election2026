@@ -107,4 +107,36 @@ t('NH, ME, NE report why they are not polled instead of failing silently', () =>
   assert.ok(S('nh').noLiveFeed); assert.ok(S('me').noLiveFeed); assert.ok(S('ne').noLiveFeed);
 });
 
-console.log(`test-states: ${n} checks passed`);
+// Async checks: the feed runner's address list, and readable network errors.
+(async () => {
+  const fs2 = require('fs');
+  const { StateFeedsProvider } = require('../lib/statefeeds');
+  const csv = fx('ak_enr_2026primary_subset.csv').trim().split('\n');
+  const keep = new Set(csv.slice(1).map((l) => l.split(',')[12]).filter((v, i, a) => a.indexOf(v) === i).slice(0, 4));
+  const general = [csv[0], ...csv.slice(1).filter((l) => keep.has(l.split(',')[12]))].join('\n');
+  const hits = [];
+  let live = 'B';
+  global.fetch = async (url) => {
+    hits.push(url);
+    const ok = url.endsWith(`/${live}.csv`);
+    return ok ? { ok: true, status: 200, headers: new Map(), text: async () => general } : { ok: false, status: 404, headers: new Map(), text: async () => 'Not Found' };
+  };
+  const cfg = { electionDate: '2026-11-03', results: { stateFeeds: { AK: { urls: ['https://x/A.csv', 'https://x/B.csv', 'https://x/C.csv'], minIntervalSec: 0.001 } } } };
+  const p = new StateFeedsProvider(cfg);
+  await p.fetch();
+  assert.deepStrictEqual(hits, ['https://x/A.csv', 'https://x/B.csv'], 'tries addresses in order, stops at the first that works');
+  assert.ok(p.feedStatus()[0].ok); assert.strictEqual(p.feedStatus()[0].url, 'https://x/B.csv');
+  hits.length = 0; await new Promise((r) => setTimeout(r, 5)); await p.fetch();
+  assert.deepStrictEqual(hits, ['https://x/B.csv'], 'remembers the working address');
+  live = 'none'; hits.length = 0; await new Promise((r) => setTimeout(r, 5)); await p.fetch();
+  const st = p.feedStatus()[0];
+  assert.ok(!st.ok && st.stale, 'all failing: error, last good data kept');
+  assert.match(st.message, /tried 3 addresses: 404 https:\/\/x\/B\.csv; 404 https:\/\/x\/A\.csv; 404 https:\/\/x\/C\.csv/);
+  n++; console.log('  ok state feed address list: in order, remembered, every failure reported');
+
+  const { get } = require('../lib/http');
+  global.fetch = async () => { const e = new TypeError('fetch failed'); e.cause = Object.assign(new Error('getaddrinfo ENOTFOUND mielections.us'), { code: 'ENOTFOUND' }); throw e; };
+  await assert.rejects(get('https://mielections.us/x', { as: 'text' }), /^TypeError: fetch failed: ENOTFOUND – getaddrinfo ENOTFOUND mielections\.us \(mielections\.us\)$/);
+  n++; console.log('  ok "fetch failed" errors say why');
+  console.log(`test-states: ${n} checks passed`);
+})().catch((e) => { console.error('test-states FAILED:', e.stack || e.message); process.exit(1); });

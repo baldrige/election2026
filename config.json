@@ -43,8 +43,10 @@
       },
       "AK": {
         "enabled": true,
-        "_note": "First-choice votes only. On Nov 3 the /enr26/ address returned 404 (it held the August primary). The addresses below are tried in order; the first that works is remembered. If none work, find the general-election precinct CSV link on elections.alaska.gov and put it first.",
+        "_note": "First-choice votes only. The general-election folder is /enr/26GENR/results/ (it holds CVR_Export_*.zip, ballot-level files for the later ranked-choice count, which the dashboard does not read). Addresses are tried in order; the first that works is remembered. If none work, put the precinct CSV link from elections.alaska.gov first.",
         "urls": [
+          "https://www.elections.alaska.gov/enr/26GENR/results/GA_ENR_Precinct_State_of_Alaska.csv",
+          "https://www.elections.alaska.gov/enr/26GENR/results/ENRbyPrecinct.csv",
           "https://www.elections.alaska.gov/enr/results/GA_ENR_Precinct_State_of_Alaska.csv",
           "https://www.elections.alaska.gov/enr26/results/GA_ENR_Precinct_State_of_Alaska.csv",
           "https://www.elections.alaska.gov/results/26GENR/ENRbyPrecinct.csv"
